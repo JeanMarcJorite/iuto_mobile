@@ -2,30 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iuto_mobile/components/my_button.dart';
 import 'package:iuto_mobile/components/my_textfield.dart';
-import 'package:iuto_mobile/db/auth_services.dart';
 import 'package:iuto_mobile/db/data/Users/src/models/user_repo.dart';
-
+import 'package:iuto_mobile/db/supabase.dart';
+import 'package:iuto_mobile/services/user_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 
 class SignUpPage extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   final TextEditingController _pseudoController = TextEditingController();
   final TextEditingController _nomController = TextEditingController();
   final TextEditingController _prenomController = TextEditingController();
-
-
 
   final void Function()? onTap;
 
   SignUpPage({super.key, required this.onTap});
 
   void register(BuildContext context) async {
-    final authService = AuthServices();
     if (_passwordController.text.trim() ==
         _confirmPasswordController.text.trim()) {
       try {
+        final supabeService = SupabaseService();
         MyUser myUser = MyUser.empty;
+    
         myUser.email = _emailController.text.trim();
         myUser.mdp = _passwordController.text.trim();
         myUser.pseudo = _pseudoController.text.trim();
@@ -52,9 +54,19 @@ class SignUpPage extends StatelessWidget {
           showSnackBar(context, 'Le prénom est requis');
           return;
         }
-        
-        await authService.signUp(myUser, _passwordController.text.trim());
-        await authService.setUserData(myUser);
+
+
+        final myuserEntity = myUser.toEntity();
+
+
+        final rep = await supabeService.insertUser(myuserEntity);
+
+         SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('userId', rep["id"]);
+          await prefs.setBool('isLoggedIn', true);
+
+          Provider.of<UserProvider>(context, listen: false).user = rep;
+          context.go('/home');
       } catch (e) {
         showDialog(
             context: context,
@@ -66,7 +78,8 @@ class SignUpPage extends StatelessWidget {
       showDialog(
           context: context,
           builder: ((context) => const AlertDialog(
-                title: Text("Password don't match"),
+                title: Text("Erreur"),
+                content: Text("Les mots de passe ne correspondent pas"),
               )));
     }
   }
@@ -114,7 +127,7 @@ class SignUpPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    "Create Account",
+                    "Créez un compte",
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -129,7 +142,7 @@ class SignUpPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 15),
                   MyTextField(
-                    hintText: "Password",
+                    hintText: "Mot de passe",
                     icon: const Icon(Icons.lock_outline),
                     controller: _passwordController,
                     obscureText: true,
@@ -137,36 +150,36 @@ class SignUpPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 15),
                   MyTextField(
-                    hintText: "Confirm Password",
+                    hintText: "Confirmer le mot de passe",
                     icon: const Icon(Icons.lock_outline),
                     controller: _confirmPasswordController,
                     obscureText: true,
                     showIconObscure: true,
                   ),
                   const SizedBox(height: 15),
-                    MyTextField(
+                  MyTextField(
                     hintText: "Pseudo",
                     icon: const Icon(Icons.person_outline),
                     controller: _pseudoController,
                     obscureText: false,
-                    ),
-                    const SizedBox(height: 15),
-                    MyTextField(
+                  ),
+                  const SizedBox(height: 15),
+                  MyTextField(
                     hintText: "Nom",
                     icon: const Icon(Icons.person_outline),
                     controller: _nomController,
                     obscureText: false,
-                    ),
-                    const SizedBox(height: 15),
-                    MyTextField(
+                  ),
+                  const SizedBox(height: 15),
+                  MyTextField(
                     hintText: "Prénom",
                     icon: const Icon(Icons.person_outline),
                     controller: _prenomController,
                     obscureText: false,
-                    ),
+                  ),
                   const SizedBox(height: 15),
                   MyButton(
-                    text: "Sign up",
+                    text: "Créer un compte",
                     onPressed: () {
                       register(context);
                     },
@@ -177,11 +190,11 @@ class SignUpPage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Already Have an Account ? "),
+                      const Text("Déjà un compte ? "),
                       InkWell(
                         onTap: onTap,
                         child: Text(
-                          "Log in",
+                          "Se connecter",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.blue.shade400,

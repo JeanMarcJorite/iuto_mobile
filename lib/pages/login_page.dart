@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iuto_mobile/components/my_button.dart';
 import 'package:iuto_mobile/components/my_textfield.dart';
-//import 'package:nutrigram/db/auth_services.dart';
+import 'package:iuto_mobile/db/supabase.dart';
+import 'package:iuto_mobile/services/user_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class LoginPage extends StatelessWidget {
@@ -12,22 +15,40 @@ class LoginPage extends StatelessWidget {
 
   LoginPage({super.key, required this.onTap});
 
-  //void login(BuildContext context) async {
-  //  final authServices = AuthServices();
-//
-  //  try {
-  //    await authServices.signIn(
-  //        _emailController.text.trim(), _passwordController.text.trim());
-  //    Future.microtask(() => context.go('/home'));
-  //  } catch (e) {
-  //    showDialog(
-  //        context: context,
-  //        builder: ((context) => AlertDialog(
-  //              title: Text(e.toString()),
-  //            )));
-  //  }
-  //}
+  void login(BuildContext context) async {
+  try {
+    final result = await SupabaseService.signIn(
+      _emailController.text.trim(),
+      _passwordController.text.trim(),
+    );
 
+    if (result['success']) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('userId', result['user']['id']); 
+      await prefs.setBool('isLoggedIn', true);
+
+      Provider.of<UserProvider>(context, listen: false).user = result['user'];
+
+      context.go('/home');
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => const AlertDialog(
+          title: Text("Erreur"),
+          content: Text("Email ou mot de passe incorrect."),
+        ),
+      );
+    }
+  } catch (e) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Erreur"),
+        content: Text(e.toString()),
+      ),
+    );
+  }
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,7 +87,7 @@ class LoginPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    "Login",
+                    "Connexion",
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -74,7 +95,7 @@ class LoginPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   const Text(
-                    "Please sign in to continue",
+                    "Veuillez vous connecter pour continuer",
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w300,
@@ -89,7 +110,7 @@ class LoginPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 15),
                   MyTextField(
-                    hintText: "Password",
+                    hintText: "Mot de passe",
                     icon: const Icon(Icons.lock_outline),
                     controller: _passwordController,
                     obscureText: true,
@@ -97,9 +118,9 @@ class LoginPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 15),
                   MyButton(
-                    text: "Sign in",
+                    text: "Connexion",
                     onPressed: () {
-                     // login(context);
+                      login(context);
                     },
                     elevation: 5.0,
                     fontSize: 15,
@@ -108,11 +129,11 @@ class LoginPage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("New User ? "),
+                      const Text("Nouvelle Utilisateur ? "),
                       GestureDetector(
                         onTap: onTap,
                         child: Text(
-                          "Create Account",
+                          "Créer un compte",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.blue.shade400,

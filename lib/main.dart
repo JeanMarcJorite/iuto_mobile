@@ -1,27 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iuto_mobile/db/supabase.dart';
 import 'package:iuto_mobile/pages/login_page.dart';
 import 'package:iuto_mobile/pages/home_page.dart';
 import 'package:iuto_mobile/pages/sign_up_page.dart';
 import 'package:iuto_mobile/services/auth_gates.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:iuto_mobile/services/user_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final supabase = await Supabase.initialize(
-    url: 'https://ibepjgntihedhmtwslxg.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImliZXBqZ250aWhlZGhtdHdzbHhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzczOTE4OTksImV4cCI6MjA1Mjk2Nzg5OX0.EsAGivjEfopNH7sKLnykD8rJ-DlAcfSL4IlILMoo7zI',
-  );
 
-  if (supabase != null) {
-    print('Connected to Supabase');
-  } else {
-    print('Failed to connect to Supabase');
+  await SupabaseService.init();
+
+  final userProvider = UserProvider();
+  final prefs = await SharedPreferences.getInstance();
+  final userId = prefs.getString('userId');
+  if (userId != null) {
+    await userProvider.fetchUser(userId);
   }
 
-  runApp(MyApp());
+  runApp(
+    MultiProvider(providers: [
+      ChangeNotifierProvider(create: (context) => userProvider),
+    ], child: const MyApp()),
+  );
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
