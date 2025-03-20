@@ -1,25 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:iuto_mobile/services/user_provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iuto_mobile/db/auth_services.dart';
+import 'package:iuto_mobile/db/data/Users/src/models/user_repo.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthGates extends StatelessWidget {
   const AuthGates({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
-
-    if (userProvider.isLoggedIn) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.go('/home');
-      });
-    } else {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.go('/login');
-      });
-    }
-
-    return const SizedBox.shrink();
+    return Scaffold(
+        body: StreamBuilder<MyUser?>(
+      stream: AuthServices().user,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        } else if (snapshot.hasData && snapshot.data != MyUser.empty) {
+          Future.microtask(() => context.go('/home'));
+        } else {
+          Future.microtask(() => context.go('/login'));
+        }
+        return const SizedBox.shrink(); 
+      },
+    ));
   }
 }

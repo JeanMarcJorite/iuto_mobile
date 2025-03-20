@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iuto_mobile/components/my_button.dart';
 import 'package:iuto_mobile/components/my_textfield.dart';
-import 'package:iuto_mobile/db/supabase.dart';
-import 'package:iuto_mobile/services/user_provider.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:iuto_mobile/db/auth_services.dart';
+//import 'package:nutrigram/db/auth_services.dart';
 
 
 class LoginPage extends StatelessWidget {
@@ -15,40 +13,33 @@ class LoginPage extends StatelessWidget {
 
   LoginPage({super.key, required this.onTap});
 
-  void login(BuildContext context) async {
+ void login(BuildContext context) async {
+  final authServices = AuthServices();
+
   try {
-    final result = await SupabaseService.signIn(
+    await authServices.signIn(
       _emailController.text.trim(),
       _passwordController.text.trim(),
     );
 
-    if (result['success']) {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('userId', result['user']['id']); 
-      await prefs.setBool('isLoggedIn', true);
-
-      Provider.of<UserProvider>(context, listen: false).user = result['user'];
-
-      context.go('/home');
-    } else {
-      showDialog(
-        context: context,
-        builder: (context) => const AlertDialog(
-          title: Text("Erreur"),
-          content: Text("Email ou mot de passe incorrect."),
-        ),
-      );
-    }
+    Future.microtask(() => context.go('/home'));
   } catch (e) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Erreur"),
         content: Text(e.toString()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text("OK"),
+          ),
+        ],
       ),
     );
   }
 }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,7 +78,7 @@ class LoginPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    "Connexion",
+                    "Login",
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -95,7 +86,7 @@ class LoginPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   const Text(
-                    "Veuillez vous connecter pour continuer",
+                    "Please sign in to continue",
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w300,
@@ -110,7 +101,7 @@ class LoginPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 15),
                   MyTextField(
-                    hintText: "Mot de passe",
+                    hintText: "Password",
                     icon: const Icon(Icons.lock_outline),
                     controller: _passwordController,
                     obscureText: true,
@@ -118,7 +109,7 @@ class LoginPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 15),
                   MyButton(
-                    text: "Connexion",
+                    text: "Sign in",
                     onPressed: () {
                       login(context);
                     },
@@ -129,11 +120,11 @@ class LoginPage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Nouvelle Utilisateur ? "),
+                      const Text("New User ? "),
                       GestureDetector(
                         onTap: onTap,
                         child: Text(
-                          "Créer un compte",
+                          "Create Account",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.blue.shade400,

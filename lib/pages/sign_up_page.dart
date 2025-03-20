@@ -2,34 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iuto_mobile/components/my_button.dart';
 import 'package:iuto_mobile/components/my_textfield.dart';
+import 'package:iuto_mobile/db/auth_services.dart';
 import 'package:iuto_mobile/db/data/Users/src/models/user_repo.dart';
-import 'package:iuto_mobile/db/supabase.dart';
-import 'package:iuto_mobile/services/user_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:provider/provider.dart';
+
 
 class SignUpPage extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _pseudoController = TextEditingController();
   final TextEditingController _nomController = TextEditingController();
   final TextEditingController _prenomController = TextEditingController();
+
+
 
   final void Function()? onTap;
 
   SignUpPage({super.key, required this.onTap});
 
   void register(BuildContext context) async {
+    final authService = AuthServices();
     if (_passwordController.text.trim() ==
         _confirmPasswordController.text.trim()) {
       try {
-        final supabeService = SupabaseService();
         MyUser myUser = MyUser.empty;
-    
         myUser.email = _emailController.text.trim();
-        myUser.mdp = _passwordController.text.trim();
         myUser.pseudo = _pseudoController.text.trim();
         myUser.nom = _nomController.text.trim();
         myUser.prenom = _prenomController.text.trim();
@@ -54,19 +51,24 @@ class SignUpPage extends StatelessWidget {
           showSnackBar(context, 'Le prénom est requis');
           return;
         }
-
-
-        final myuserEntity = myUser.toEntity();
-
-
-        final rep = await supabeService.insertUser(myuserEntity);
-
-         SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setString('userId', rep["id"]);
-          await prefs.setBool('isLoggedIn', true);
-
-          Provider.of<UserProvider>(context, listen: false).user = rep;
-          context.go('/home');
+        
+        await authService.signUp(myUser, _passwordController.text.trim());
+        await authService.setUserData(myUser);
+        showDialog(
+            context: context,
+            builder: ((context) => AlertDialog(
+            title: const Text("Succès"),
+            content: const Text("Compte créé avec succès. Veuillez vérifier votre email."),
+            actions: [
+              TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+            context.go('/login');
+          },
+          child: const Text("OK"),
+              )
+            ],
+          )));
       } catch (e) {
         showDialog(
             context: context,
@@ -78,8 +80,7 @@ class SignUpPage extends StatelessWidget {
       showDialog(
           context: context,
           builder: ((context) => const AlertDialog(
-                title: Text("Erreur"),
-                content: Text("Les mots de passe ne correspondent pas"),
+                title: Text("Password don't match"),
               )));
     }
   }
@@ -127,7 +128,7 @@ class SignUpPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    "Créez un compte",
+                    "Create Account",
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -142,7 +143,7 @@ class SignUpPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 15),
                   MyTextField(
-                    hintText: "Mot de passe",
+                    hintText: "Password",
                     icon: const Icon(Icons.lock_outline),
                     controller: _passwordController,
                     obscureText: true,
@@ -150,36 +151,36 @@ class SignUpPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 15),
                   MyTextField(
-                    hintText: "Confirmer le mot de passe",
+                    hintText: "Confirm Password",
                     icon: const Icon(Icons.lock_outline),
                     controller: _confirmPasswordController,
                     obscureText: true,
                     showIconObscure: true,
                   ),
                   const SizedBox(height: 15),
-                  MyTextField(
+                    MyTextField(
                     hintText: "Pseudo",
                     icon: const Icon(Icons.person_outline),
                     controller: _pseudoController,
                     obscureText: false,
-                  ),
-                  const SizedBox(height: 15),
-                  MyTextField(
+                    ),
+                    const SizedBox(height: 15),
+                    MyTextField(
                     hintText: "Nom",
                     icon: const Icon(Icons.person_outline),
                     controller: _nomController,
                     obscureText: false,
-                  ),
-                  const SizedBox(height: 15),
-                  MyTextField(
+                    ),
+                    const SizedBox(height: 15),
+                    MyTextField(
                     hintText: "Prénom",
                     icon: const Icon(Icons.person_outline),
                     controller: _prenomController,
                     obscureText: false,
-                  ),
+                    ),
                   const SizedBox(height: 15),
                   MyButton(
-                    text: "Créer un compte",
+                    text: "Sign up",
                     onPressed: () {
                       register(context);
                     },
@@ -190,11 +191,11 @@ class SignUpPage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Déjà un compte ? "),
+                      const Text("Already Have an Account ? "),
                       InkWell(
                         onTap: onTap,
                         child: Text(
-                          "Se connecter",
+                          "Log in",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.blue.shade400,

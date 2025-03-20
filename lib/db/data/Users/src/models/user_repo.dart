@@ -1,6 +1,4 @@
 import 'package:iuto_mobile/db/data/Users/src/entities/entities.dart';
-import 'package:uuid/uuid.dart';
-
 
 class MyUser {
   String id;
@@ -11,7 +9,6 @@ class MyUser {
   String mdp;
   int idRole;
   DateTime date_creation;
-  static final uuid = Uuid();
 
   MyUser({
     required this.id,
@@ -24,9 +21,8 @@ class MyUser {
     required this.date_creation,
   });
 
-
   static final empty = MyUser(
-    id: MyUser.uuid.v4(),
+    id: '',
     pseudo: '',
     email: '',
     nom: '',
@@ -49,6 +45,18 @@ class MyUser {
     );
   }
 
+  static MyUser fromEntity(MyUserEntity entity) {
+    return MyUser(
+      id: entity.id,
+      pseudo: entity.pseudo,
+      email: entity.email,
+      nom: entity.nom,
+      prenom: entity.prenom,
+      mdp: entity.mdp,
+      idRole: entity.idRole,
+      date_creation: entity.date_creation,
+    );
+  }
 
   @override
   String toString() {
