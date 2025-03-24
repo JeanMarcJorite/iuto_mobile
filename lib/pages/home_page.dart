@@ -20,7 +20,7 @@ class HomePage extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.restaurant),
-            onPressed: () => Navigator.pushNamed(context, '/restos'),
+            onPressed: () => Navigator.pushNamed(context, '/restaurant_list'),
           ),
           Consumer<AuthProvider>(
             builder: (context, auth, child) => auth.isLoggedIn
