@@ -1,4 +1,4 @@
-name: iutableso
+name: iuto_mobile
 description: A restaurant comparison app
 version: 1.0.0+1
 
@@ -8,15 +8,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  supabase_flutter: ^2.0.0  # For Supabase integration
-  http: ^1.1.0            # For additional HTTP requests if needed
-  flutter_secure_storage: ^9.0.0  # For storing auth tokens
+  go_router: ^7.0.0
+  http: ^1.1.0
+  flutter_secure_storage: ^9.0.0
   provider: ^6.0.0        
   flutter_map: ^6.0.0     
   latlong2: ^0.9.0        
   cupertino_icons: ^1.0.8
-  go_router: ^14.8.1
-  supabase_flutter: ^2.8.4
+  supabase_flutter: ^1.0.0
 
 
 dev_dependencies:

@@ -1,4 +1,4 @@
-import 'package:iuto_mobile/db/data/Users/src/entities/entities.dart';
+import '../entities/entities.dart';
 
 class MyUser {
   String id;

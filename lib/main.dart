@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
-import 'screens/home_page.dart';
-import 'screens/restos_page.dart';
-import 'screens/login_page.dart';
+import 'pages/home_page.dart';
+import 'pages/restos_page.dart';
+import 'pages/sign_up_page.dart';
+import 'pages/login_page.dart';
 
 void main() {
   runApp(
@@ -25,7 +26,8 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => HomePage(),
         '/restos': (context) => const RestosPage(),
-        '/login': (context) => const LoginPage(),
+        '/login': (context) =>  LoginPage(onTap: () {  },),
+        '/register': (context) =>  SignUpPage(onTap: () {  },),
       },
       theme: ThemeData(
         primarySwatch: Colors.blue,
