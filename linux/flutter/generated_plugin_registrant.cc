@@ -6,6 +6,8 @@
 
 #include "generated_plugin_registrant.h"
 
+
+#include <flutter_secure_storage_linux/flutter_secure_storage_linux_plugin.h>
 #include <gtk/gtk_plugin.h>
 #include <url_launcher_linux/url_launcher_plugin.h>
 
