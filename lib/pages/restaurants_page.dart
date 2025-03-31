@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:iuto_mobile/providers/restaurant_provider.dart';
 import 'package:iuto_mobile/widgets/restaurant_card.dart';
-import 'package:iuto_mobile/widgets/filters_widget.dart';
+import '../widgets/filters_widgets.dart';
 
 class RestaurantsPage extends StatefulWidget {
   const RestaurantsPage({super.key});

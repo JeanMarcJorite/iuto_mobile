@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:iutableso/models/restaurant.dart';
-import 'package:iutableso/services/supabase_service.dart';
+import '../db/data/Users/src/models/restaurant.dart';
+import '../db/supabase_service.dart';
 
 class RestaurantProvider with ChangeNotifier {
   List<Restaurant> _restaurants = [];
