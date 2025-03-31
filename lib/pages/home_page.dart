@@ -19,7 +19,7 @@ class HomePage extends StatelessWidget {
         title: const Text('IUTables’O'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.restaurant),
+            icon: const Icon(Icons.login),
             onPressed: () => Navigator.pushNamed(context, '/restos'),
           ),
           Consumer<AuthProvider>(

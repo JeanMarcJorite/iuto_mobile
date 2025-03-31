@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:iuto_mobile/providers/restaurant_provider.dart';
 import 'package:provider/provider.dart';
+import 'db/supabase_service.dart';
 import 'providers/auth_provider.dart';
 import 'pages/home_page.dart';
-import 'pages/restos_page.dart';
+import 'pages/restaurants_page.dart';
 import 'pages/sign_up_page.dart';
 import 'pages/login_page.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SupabaseService.initialize();
+  
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => AuthProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => RestaurantProvider()),
+      ],
       child: const MyApp(),
     ),
   );
@@ -25,7 +33,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => HomePage(),
-        '/restos': (context) => const RestosPage(),
+        '/restos': (context) => const RestaurantsPage(),
         '/login': (context) =>  LoginPage(onTap: () {  },),
         '/register': (context) =>  SignUpPage(onTap: () {  },),
       },
