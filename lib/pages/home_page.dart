@@ -117,6 +117,13 @@ class HomePage extends StatelessWidget {
                       );
                     },
                   ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/map');
+                    },
+                    child: const Text('Voir la map des restaurants'),
+                  ),
                 ],
               ),
             ),

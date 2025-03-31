@@ -7,6 +7,7 @@ import 'pages/home_page.dart';
 import 'pages/restaurants_page.dart';
 import 'pages/sign_up_page.dart';
 import 'pages/login_page.dart';
+import 'pages/map_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,6 +37,8 @@ class MyApp extends StatelessWidget {
         '/restos': (context) => const RestaurantsPage(),
         '/login': (context) =>  LoginPage(onTap: () {  },),
         '/register': (context) =>  SignUpPage(onTap: () {  },),
+        '/register': (context) => SignUpPage(onTap: () {}),
+        '/map': (context) => const MapPage(),
       },
       theme: ThemeData(
         primarySwatch: Colors.blue,
