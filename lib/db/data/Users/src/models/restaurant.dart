@@ -71,8 +71,8 @@ class Restaurant {
       internetAccess: map['internet_access'] as bool,
       wheelchair: map['wheelchair'] as bool,
       type: map['typeR'] as String,
-      longitude: map['longitude'] != null ? map['longitude'] as double : 0.0,
-      latitude: map['latitude'] != null ? map['latitude'] as double : 0.0,
+      longitude: map['longitude'] as double?,
+      latitude: map['latitude'] as double?,
       brand: map['brand'] as String?,
       capacity: map['capacity'] as String?, // Modifié
       stars: map['stars'] as String?, // Modifié
