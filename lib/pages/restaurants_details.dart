@@ -109,7 +109,6 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                         ],
                       ),
                       const SizedBox(height: 20),
-
                       Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: Text(
@@ -120,9 +119,7 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 20),
-
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20.0),
                         child: Row(
@@ -148,7 +145,6 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                         ),
                       ),
                       const SizedBox(height: 20),
-
                       ElevatedButton(
                         onPressed: () {
                           final idCritique = const Uuid().v4();
@@ -157,8 +153,15 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                         },
                         child: const Text('Ajouter un avis'),
                       ),
+                      ElevatedButton(
+                        onPressed: () {
+                          final idCritique = const Uuid().v4();
+                          context.push(
+                              "/details/photo");
+                        },
+                        child: const Text('Ajouter une image'),
+                      ),
                       const SizedBox(height: 20),
-
                       Padding(
                         padding: const EdgeInsets.all(18.0),
                         child: Column(

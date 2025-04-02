@@ -84,7 +84,7 @@ final _allRoutes = GoRouter(routes: [
       },
       routes: [
         GoRoute(
-          path: '/photos',
+          path: '/photo',
           builder: (context, state) => PhotoPage(),
         ),
         GoRoute(
