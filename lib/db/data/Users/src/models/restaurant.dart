@@ -9,11 +9,11 @@ class Restaurant {
   final bool internetAccess;
   final bool wheelchair;
   final String type;
-  final double longitude;
-  final double latitude;
+  final double? longitude;
+  final double? latitude;
   final String? brand;
-  final int? capacity;
-  final double stars;
+  final String? capacity; // Modifié en String?
+  final String? stars; // Modifié en String?
   final String? website;
   final String? map;
   final String? operator;
@@ -71,11 +71,11 @@ class Restaurant {
       internetAccess: map['internet_access'] as bool,
       wheelchair: map['wheelchair'] as bool,
       type: map['typeR'] as String,
-      longitude: map['longitude'] as double,
-      latitude: map['latitude'] as double,
+      longitude: map['longitude'] != null ? map['longitude'] as double : 0.0,
+      latitude: map['latitude'] != null ? map['latitude'] as double : 0.0,
       brand: map['brand'] as String?,
-      capacity: map['capacity'] as int?,
-      stars: map['stars'] as double,
+      capacity: map['capacity'] as String?, // Modifié
+      stars: map['stars'] as String?, // Modifié
       website: map['website'] as String?,
       map: map['map'] as String?,
       operator: map['operator'] as String?,

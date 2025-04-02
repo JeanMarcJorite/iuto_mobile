@@ -12,14 +12,16 @@ class RestaurantCard extends StatelessWidget {
       elevation: 4,
       child: InkWell(
         onTap: () {
-          Navigator.pushNamed(context, '/restaurant-detail', arguments: restaurant);
+          Navigator.pushNamed(context, '/restaurant-detail',
+              arguments: restaurant);
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(4)),
                 child: Image.network(
                   restaurant.photo ?? 'https://via.placeholder.com/150',
                   width: double.infinity,
@@ -45,7 +47,9 @@ class RestaurantCard extends StatelessWidget {
                   Row(
                     children: [
                       const Icon(Icons.star, color: Colors.amber, size: 16),
-                      Text(' ${restaurant.stars.toStringAsFixed(1)}/5'),
+                      Text(
+                        ' ${restaurant.stars != null && double.tryParse(restaurant.stars!) != null ? double.parse(restaurant.stars!).toStringAsFixed(1) : 'Non noté'}/5',
+                      ),
                     ],
                   ),
                   const SizedBox(height: 4),

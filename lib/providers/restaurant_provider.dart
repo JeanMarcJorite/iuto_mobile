@@ -18,11 +18,13 @@ class RestaurantProvider with ChangeNotifier {
 
     try {
       final data = await SupabaseService.fetchRestaurants();
+      print('Données récupérées de Supabase : $data'); // Ajoute ce log
       _restaurants = data.map((json) => Restaurant.fromMap(json)).toList();
       _filteredRestaurants = _restaurants;
       _error = null;
     } catch (e) {
       _error = 'Failed to load restaurants: ${e.toString()}';
+      print('Erreur lors du chargement : $_error'); // Ajoute ce log
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -48,7 +50,9 @@ class RestaurantProvider with ChangeNotifier {
       if (searchQuery != null && searchQuery.isNotEmpty) {
         matches = matches &&
             (restaurant.nom.toLowerCase().contains(searchQuery.toLowerCase()) ||
-                restaurant.adresse.toLowerCase().contains(searchQuery.toLowerCase()));
+                restaurant.adresse
+                    .toLowerCase()
+                    .contains(searchQuery.toLowerCase()));
       }
 
       // Ajoutez les autres filtres ici...
