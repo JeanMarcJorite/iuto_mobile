@@ -11,7 +11,7 @@ class AuthServices implements UserRepository {
   Stream<MyUser?> get user {
     return _supabase.auth.onAuthStateChange.asyncExpand((authState) async* {
       final session = authState.session;
-      if (session == null || session.user == null) {
+      if (session == null) {
         yield MyUser.empty;
       } else {
         final userId = session.user.id;

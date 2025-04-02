@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../db/data/Users/src/models/restaurant.dart';
+import 'package:go_router/go_router.dart';
+import 'package:iuto_mobile/db/data/Restaurants/restaurant.dart';
+import 'package:iuto_mobile/widgets/like_widget.dart';
 
 class RestaurantCard extends StatelessWidget {
   final Restaurant restaurant;
@@ -8,55 +10,51 @@ class RestaurantCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      child: InkWell(
-        onTap: () {
-          Navigator.pushNamed(context, '/restaurant-detail', arguments: restaurant);
-        },
+    return InkWell(
+      onTap: () {
+        context.push("/details/${restaurant.id}");
+      },
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
-                child: Image.network(
-                  restaurant.photo ?? 'https://via.placeholder.com/150',
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
-              ),
+            ClipRRect(
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(10)),
+              child: restaurant.photo != null && restaurant.photo!.isNotEmpty
+                  ? Image.network(
+                      restaurant.photo!,
+                      height: 120,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(Icons.broken_image, size: 120);
+                      },
+                    )
+                  : const Icon(Icons.image, size: 120),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    restaurant.nom,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+            Row(
+              children: [
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      restaurant.nom,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.visible,
+                      maxLines: null,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(Icons.star, color: Colors.amber, size: 16),
-                      Text(' ${restaurant.stars.toStringAsFixed(1)}/5'),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    restaurant.adresse,
-                    style: const TextStyle(fontSize: 12),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
+                ),
+                LikeWidget(restaurantId: restaurant.id),
+              ],
             ),
           ],
         ),

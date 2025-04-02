@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iuto_mobile/components/my_button.dart';
 import 'package:iuto_mobile/components/my_textfield.dart';
-//import 'package:nutrigram/db/auth_services.dart';
+import 'package:iuto_mobile/db/auth_services.dart';
 
 
 class LoginPage extends StatelessWidget {
@@ -12,21 +12,32 @@ class LoginPage extends StatelessWidget {
 
   LoginPage({super.key, required this.onTap});
 
-  //void login(BuildContext context) async {
-  //  final authServices = AuthServices();
-//
-  //  try {
-  //    await authServices.signIn(
-  //        _emailController.text.trim(), _passwordController.text.trim());
-  //    Future.microtask(() => context.go('/home'));
-  //  } catch (e) {
-  //    showDialog(
-  //        context: context,
-  //        builder: ((context) => AlertDialog(
-  //              title: Text(e.toString()),
-  //            )));
-  //  }
-  //}
+ void login(BuildContext context) async {
+  final authServices = AuthServices();
+
+  try {
+    await authServices.signIn(
+      _emailController.text.trim(),
+      _passwordController.text.trim(),
+    );
+
+    Future.microtask(() => context.go('/home'));
+  } catch (e) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Erreur"),
+        content: Text(e.toString()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +110,7 @@ class LoginPage extends StatelessWidget {
                   MyButton(
                     text: "Sign in",
                     onPressed: () {
-                     // login(context);
+                      login(context);
                     },
                     elevation: 5.0,
                     fontSize: 15,

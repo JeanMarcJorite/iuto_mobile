@@ -27,7 +27,6 @@ class SignUpPage extends StatelessWidget {
       try {
         MyUser myUser = MyUser.empty;
         myUser.email = _emailController.text.trim();
-        myUser.mdp = _passwordController.text.trim();
         myUser.pseudo = _pseudoController.text.trim();
         myUser.nom = _nomController.text.trim();
         myUser.prenom = _prenomController.text.trim();
@@ -55,6 +54,21 @@ class SignUpPage extends StatelessWidget {
         
         await authService.signUp(myUser, _passwordController.text.trim());
         await authService.setUserData(myUser);
+        showDialog(
+            context: context,
+            builder: ((context) => AlertDialog(
+            title: const Text("Succès"),
+            content: const Text("Compte créé avec succès. Veuillez vérifier votre email."),
+            actions: [
+              TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+            context.go('/login');
+          },
+          child: const Text("OK"),
+              )
+            ],
+          )));
       } catch (e) {
         showDialog(
             context: context,
