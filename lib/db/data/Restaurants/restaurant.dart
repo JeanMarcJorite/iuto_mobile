@@ -13,7 +13,7 @@ class Restaurant {
   final double latitude;
   final String? brand;
   final int? capacity;
-  final double? stars; 
+  final double? stars;
   final String? website;
   final String? map;
   final String? operator;
@@ -59,37 +59,36 @@ class Restaurant {
     this.idCommune,
   });
 
- factory Restaurant.fromMap(Map<String, dynamic> map) {
-  return Restaurant(
-    id: map['id'] != null ? int.tryParse(map['id'].toString()) ?? 0 : 0, // Gestion sécurisée pour id
-    nom: map['nom'] as String? ?? '',
-    adresse: map['adresse'] as String? ?? '',
-    telephone: map['phone'] as String? ?? '',
-    photo: map['photo'] as String?,
-    siret: map['siret'] as String?,
-    openingHours: map['opening_hours'] as String?,
-    internetAccess: map['internet_access'] as bool? ?? false,
-    wheelchair: map['wheelchair'] as bool? ?? false,
-    type: map['typeR'] as String? ?? '',
-    longitude: map['longitude'] != null ? double.tryParse(map['longitude'].toString()) ?? 0.0 : 0.0,
-    latitude: map['latitude'] != null ? double.tryParse(map['latitude'].toString()) ?? 0.0 : 0.0,
-    brand: map['brand'] as String?,
-    capacity: map['capacity'] != null ? int.tryParse(map['capacity'].toString()) : null,
-    stars: map['stars'] != null ? double.tryParse(map['stars'].toString()) : null,
-    website: map['website'] as String?,
-    map: map['map'] as String?,
-    operator: map['operator'] as String?,
-    vegetarian: map['vegetarian'] as bool? ?? false,
-    vegan: map['vegan'] as bool? ?? false,
-    delivery: map['delivery'] as bool? ?? false,
-    takeaway: map['takeaway'] as bool? ?? false,
-    driveThrough: map['drive_through'] as bool? ?? false,
-    wikidata: map['wikidata'] as String?,
-    brandWikidata: map['brand_wikidata'] as String?,
-    facebook: map['facebook'] as String?,
-    smoking: map['smoking'] as bool? ?? false,
-    idCommune: map['idC'] != null ? int.tryParse(map['idC'].toString()) : null,
-  );
-
-}
+  factory Restaurant.fromMap(Map<String, dynamic> map) {
+    return Restaurant(
+      id: map['id'] != null ? int.tryParse(map['id'].toString()) ?? 0 : 0, // Gestion sécurisée pour id
+      nom: map['nom'] as String? ?? '',
+      adresse: map['adresse'] as String? ?? '',
+      telephone: map['phone'] as String? ?? '',
+      photo: map['photo'] as String?,
+      siret: map['siret'] as String?,
+      openingHours: map['opening_hours'] as String?,
+      internetAccess: map['internet_access'] as bool? ?? false,
+      wheelchair: map['wheelchair'] as bool? ?? false,
+      type: map['typeR'] as String? ?? '',
+      longitude: map['longitude'] != null ? double.tryParse(map['longitude'].toString()) ?? 0.0 : 0.0,
+      latitude: map['latitude'] != null ? double.tryParse(map['latitude'].toString()) ?? 0.0 : 0.0,
+      brand: map['brand'] as String?,
+      capacity: map['capacity'] != null ? int.tryParse(map['capacity'].toString()) : null,
+      stars: map['stars'] != null ? double.tryParse(map['stars'].toString()) : null,
+      website: map['website'] as String?,
+      map: map['map'] as String?,
+      operator: map['operator'] as String?,
+      vegetarian: map['vegetarian'] as bool? ?? false,
+      vegan: map['vegan'] as bool? ?? false,
+      delivery: map['delivery'] as bool? ?? false,
+      takeaway: map['takeaway'] as bool? ?? false,
+      driveThrough: map['drive_through'] as bool? ?? false,
+      wikidata: map['wikidata'] as String?,
+      brandWikidata: map['brand_wikidata'] as String?,
+      facebook: map['facebook'] as String?,
+      smoking: map['smoking'] as bool? ?? false,
+      idCommune: map['idC'] != null ? int.tryParse(map['idC'].toString()) : null,
+    );
+  }
 }

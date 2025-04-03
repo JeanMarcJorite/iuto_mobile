@@ -1,30 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:iuto_mobile/providers/favoris_provider.dart';
-import 'package:iuto_mobile/widgets/restaurant_card.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:iuto_mobile/providers/restaurant_provider.dart';
+import 'package:iuto_mobile/widgets/restaurant_card.dart';
 
-//Description : Affiche une liste de restaurants recommandés en fonction des préférences de l'utilisateur.
-//Afficher les restaurants correspondant aux types de cuisine préférés.
-//Mettre en avant les restaurants les mieux notés ou les plus proches.
-//Inclure une section "Tendances" ou "Nouveaux restaurants".
-
-class MyHomePage extends StatefulWidget {
+class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key});
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<RestaurantProvider>(context, listen: false).loadRestaurants();
-      Provider.of<FavorisProvider>(context, listen: false).loadAllFavoris();
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,38 +13,68 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Restaurants'),
+        title: const Text('IUTables’O'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              context.go('/login'); // Correction ici
+            },
+            child: const Text(
+              'Connexion',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
       ),
-      body: restaurantProvider.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : restaurantProvider.error != null
-              ? Center(child: Text('Erreur : ${restaurantProvider.error}'))
-              : restaurantProvider.restaurants.isEmpty
-                  ? const Center(child: Text('Aucun restaurant trouvé.'))
-                  : GridView.builder(
-                      padding: const EdgeInsets.all(8),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.8,
-                        crossAxisSpacing: 8,
-                        mainAxisSpacing: 8,
-                      ),
-                      itemCount: restaurantProvider.restaurants.length,
-                      itemBuilder: (context, index) {
-                        final restaurant =
-                            restaurantProvider.restaurants[index];
-                        return RestaurantCard(restaurant: restaurant);
-                      },
-                    ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          restaurantProvider.loadRestaurants();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Restaurants rechargés')),
-          );
-        },
-        child: const Icon(Icons.refresh),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Bienvenue sur la page d\'accueil',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Bienvenue sur notre plateforme de comparateur de restaurants en ligne. Vous pouvez comparer les restaurants de la région Orléanaise.',
+                style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    context.go('/map'); // Correction ici
+                  },
+                  child: const Text('Voir la carte des restaurants'),
+                ),
+              ),
+              const SizedBox(height: 32),
+              const Text(
+                'Les meilleurs restaurants',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              restaurantProvider.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : restaurantProvider.restaurants.isEmpty
+                      ? const Text('Aucun restaurant trouvé avec plus d\'une étoile.')
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: restaurantProvider.restaurants.length,
+                          itemBuilder: (context, index) {
+                            final restaurant = restaurantProvider.restaurants[index];
+                            if (restaurant.stars != null && restaurant.stars! > 1) {
+                              return RestaurantCard(restaurant: restaurant);
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
+            ],
+          ),
+        ),
       ),
     );
   }

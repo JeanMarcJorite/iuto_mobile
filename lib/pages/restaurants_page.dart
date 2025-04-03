@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:iuto_mobile/providers/restaurant_provider.dart';
 import 'package:iuto_mobile/widgets/restaurant_card.dart';
 import '../widgets/filters_widgets.dart';
-import 'dart:async';
 
 class RestaurantsPage extends StatefulWidget {
   const RestaurantsPage({super.key});
@@ -15,84 +14,13 @@ class RestaurantsPage extends StatefulWidget {
 
 class _RestaurantsPageState extends State<RestaurantsPage> {
   final TextEditingController _searchController = TextEditingController();
-  Timer? _debounce;
-  Map<String, dynamic> _activeFilters = {};
-  List<Restaurant> _localRestaurants = [];
-  List<Restaurant> _filteredRestaurants = [];
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final restaurantProvider =
-          Provider.of<RestaurantProvider>(context, listen: false);
-
-      setState(() {
-        _localRestaurants = restaurantProvider.restaurants;
-        _filteredRestaurants = _localRestaurants;
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _debounce?.cancel();
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  void _applyFilters(Map<String, dynamic> filters) {
-    setState(() {
-      _activeFilters = filters;
-      _filterRestaurants();
-    });
-  }
-
-  void _onSearchChanged(String value) {
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 300), () {
-      setState(() {
-        _filterRestaurants();
-      });
-    });
-  }
-
-  void _filterRestaurants() {
-    setState(() {
-      _filteredRestaurants = _localRestaurants.where((restaurant) {
-        final matchesSearchQuery = _searchController.text.isEmpty ||
-            restaurant.nom
-                .toLowerCase()
-                .contains(_searchController.text.toLowerCase());
-
-        final matchesVegetarian = _activeFilters['isVegetarian'] == null ||
-            restaurant.vegetarian == _activeFilters['isVegetarian'];
-        final matchesVegan = _activeFilters['isVegan'] == null ||
-            restaurant.vegan == _activeFilters['isVegan'];
-        final matchesInternetAccess =
-            _activeFilters['internetAccess'] == null ||
-                restaurant.internetAccess == _activeFilters['internetAccess'];
-        final matchesWheelchair = _activeFilters['wheelchair'] == null ||
-            restaurant.wheelchair == _activeFilters['wheelchair'];
-        final matchesDelivery = _activeFilters['delivery'] == null ||
-            restaurant.delivery == _activeFilters['delivery'];
-        final matchesTakeaway = _activeFilters['takeaway'] == null ||
-            restaurant.takeaway == _activeFilters['takeaway'];
-        final matchesDriveThrough = _activeFilters['driveThrough'] == null ||
-            restaurant.driveThrough == _activeFilters['driveThrough'];
-        final matchesSmoking = _activeFilters['smoking'] == null ||
-            restaurant.smoking == _activeFilters['smoking'];
-
-        return matchesSearchQuery &&
-            matchesVegetarian &&
-            matchesVegan &&
-            matchesInternetAccess &&
-            matchesWheelchair &&
-            matchesDelivery &&
-            matchesTakeaway &&
-            matchesDriveThrough &&
-            matchesSmoking;
-      }).toList();
+      // Charge les restaurants dès que la page est affichée
+      Provider.of<RestaurantProvider>(context, listen: false).loadRestaurants();
     });
   }
 
@@ -109,51 +37,51 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
             onPressed: () {
               showModalBottomSheet(
                 context: context,
-                isScrollControlled: true,
-                builder: (context) {
-                  return FractionallySizedBox(
-                    heightFactor: 0.7,
-                    child: FiltersWidget(
-                      onApplyFilters: _applyFilters,
-                    ),
-                  );
-                },
+                builder: (context) => FiltersWidget(
+                  onApplyFilters: (filters) {
+                    restaurantProvider.setFilters(filters);
+                  },
+                ),
               );
             },
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Rechercher un restaurant...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              onChanged: _onSearchChanged,
-            ),
-          ),
-          Expanded(
-            child: restaurantProvider.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _filteredRestaurants.isEmpty
-                    ? const Center(child: Text('Aucun restaurant trouvé.'))
-                    : ListView.builder(
-                        itemCount: _filteredRestaurants.length,
+      body: restaurantProvider.isLoading
+          ? const Center(child: CircularProgressIndicator()) // Affiche un indicateur de chargement
+          : restaurantProvider.restaurants.isEmpty
+              ? const Center(child: Text('Aucun restaurant trouvé.'))
+              : Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Rechercher un restaurant...',
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onChanged: (value) {
+                          restaurantProvider.filterRestaurants(
+                              searchQuery: value);
+                        },
+                      ),
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: restaurantProvider.restaurants.length,
                         itemBuilder: (context, index) {
-                          final restaurant = _filteredRestaurants[index];
+                          final restaurant =
+                              restaurantProvider.restaurants[index];
                           return RestaurantCard(restaurant: restaurant);
                         },
                       ),
-          ),
-        ],
-      ),
+                    ),
+                  ],
+                ),
     );
   }
 }
