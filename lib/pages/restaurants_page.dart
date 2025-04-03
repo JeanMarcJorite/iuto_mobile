@@ -27,6 +27,7 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
       final restaurantProvider =
           Provider.of<RestaurantProvider>(context, listen: false);
 
+      restaurantProvider.loadRestaurants();
       setState(() {
         _localRestaurants = restaurantProvider.restaurants;
         _filteredRestaurants = _localRestaurants;
@@ -69,30 +70,12 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
             restaurant.vegetarian == _activeFilters['isVegetarian'];
         final matchesVegan = _activeFilters['isVegan'] == null ||
             restaurant.vegan == _activeFilters['isVegan'];
-        final matchesInternetAccess =
-            _activeFilters['internetAccess'] == null ||
-                restaurant.internetAccess == _activeFilters['internetAccess'];
-        final matchesWheelchair = _activeFilters['wheelchair'] == null ||
-            restaurant.wheelchair == _activeFilters['wheelchair'];
-        final matchesDelivery = _activeFilters['delivery'] == null ||
-            restaurant.delivery == _activeFilters['delivery'];
-        final matchesTakeaway = _activeFilters['takeaway'] == null ||
-            restaurant.takeaway == _activeFilters['takeaway'];
-        final matchesDriveThrough = _activeFilters['driveThrough'] == null ||
-            restaurant.driveThrough == _activeFilters['driveThrough'];
-        final matchesSmoking = _activeFilters['smoking'] == null ||
-            restaurant.smoking == _activeFilters['smoking'];
 
-        return matchesSearchQuery &&
-            matchesVegetarian &&
-            matchesVegan &&
-            matchesInternetAccess &&
-            matchesWheelchair &&
-            matchesDelivery &&
-            matchesTakeaway &&
-            matchesDriveThrough &&
-            matchesSmoking;
+        // Ajoutez d'autres filtres si nécessaire
+        return matchesSearchQuery && matchesVegetarian && matchesVegan;
       }).toList();
+
+      debugPrint('Restaurants après filtrage : ${_filteredRestaurants.length}');
     });
   }
 
@@ -140,17 +123,15 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
             ),
           ),
           Expanded(
-            child: restaurantProvider.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _filteredRestaurants.isEmpty
-                    ? const Center(child: Text('Aucun restaurant trouvé.'))
-                    : ListView.builder(
-                        itemCount: _filteredRestaurants.length,
-                        itemBuilder: (context, index) {
-                          final restaurant = _filteredRestaurants[index];
-                          return RestaurantCard(restaurant: restaurant);
-                        },
-                      ),
+            child: _filteredRestaurants.isEmpty
+                ? const Center(child: Text('Aucun restaurant trouvé.'))
+                : ListView.builder(
+                    itemCount: _filteredRestaurants.length,
+                    itemBuilder: (context, index) {
+                      final restaurant = _filteredRestaurants[index];
+                      return RestaurantCard(restaurant: restaurant);
+                    },
+                  ),
           ),
         ],
       ),
