@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:iuto_mobile/providers/restaurant_provider.dart';
 import 'package:iuto_mobile/widgets/restaurant_card.dart';
@@ -16,7 +17,7 @@ class MyHomePage extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pushNamed(context, '/login');
+              context.go('/login'); // Correction ici
             },
             child: const Text(
               'Connexion',
@@ -44,7 +45,7 @@ class MyHomePage extends StatelessWidget {
               Center(
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/map');
+                    context.go('/map'); // Correction ici
                   },
                   child: const Text('Voir la carte des restaurants'),
                 ),
