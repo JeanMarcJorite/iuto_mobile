@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iuto_mobile/db/data/Favoris/favoris.dart';
 import 'package:iuto_mobile/providers/favoris_provider.dart';
 import 'package:iuto_mobile/widgets/like_widget.dart';
 import 'package:provider/provider.dart';
@@ -91,7 +90,7 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                                   child: IconButton(
                                     icon: const Icon(Icons.arrow_back_outlined),
                                     onPressed: () {
-                                      Navigator.of(context).pop();
+                                      context.pop();
                                     },
                                   ),
                                 ),

@@ -182,4 +182,26 @@ class SupabaseService {
   static Future<void> deleteFavoris(int id) async {
     await supabase.from('favoris').delete().eq('id', id);
   }
+
+  static Future<int> getLastFavorisId() async {
+    try {
+      final response = await supabase
+          .from('favoris')
+          .select('id')
+          .order('id', ascending: false)
+          .limit(1)
+          .maybeSingle();
+
+      if (response == null) {
+        // Aucun favori trouvé, retourner 0
+        return 0;
+      }
+
+      return response['id'] as int;
+    } catch (e) {
+      debugPrint(
+          'Erreur lors de la récupération du dernier ID de favoris : $e');
+      return 0; // Retourne 0 en cas d'erreur
+    }
+  }
 }

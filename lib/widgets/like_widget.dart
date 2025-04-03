@@ -8,7 +8,8 @@ class LikeWidget extends StatefulWidget {
   final int restaurantId;
   final bool showCount;
 
-  const LikeWidget({super.key, required this.restaurantId, this.showCount = true});
+  const LikeWidget(
+      {super.key, required this.restaurantId, this.showCount = true});
 
   @override
   State<LikeWidget> createState() => _LikeWidgetState();
@@ -48,13 +49,9 @@ class _LikeWidgetState extends State<LikeWidget> {
         final isLiked = favorisProvider.isFavorited(widget.restaurantId);
         final totalLikes =
             favorisProvider.getTotalFavorisCount(widget.restaurantId);
-        final lastFavorisId = favorisProvider.favoris.isNotEmpty
-            ? favorisProvider.favoris.last.id
-            : null;
 
         return Row(
           children: [
-      
             if (widget.showCount) ...[
               Text(
                 '$totalLikes',
@@ -85,8 +82,11 @@ class _LikeWidgetState extends State<LikeWidget> {
                       ),
                     );
                   } else {
+                    final lastFavorisId =
+                        await favorisProvider.getLastFavorisId();
+
                     final newFavori = Favoris(
-                      id: (lastFavorisId ?? 0) + 1,
+                      id: lastFavorisId + 1,
                       idUtilisateur: userId!,
                       idRestaurant: widget.restaurantId,
                       dateAjout: DateTime.now(),

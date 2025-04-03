@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 
@@ -45,7 +46,7 @@ class _PhotoPageState extends State<PhotoPage> {
             leading: Icon(Icons.camera_alt),
             title: Text('Prendre une photo'),
             onTap: () {
-              Navigator.pop(context);
+               context.pop();
               _addPhotoFromCamera();
             },
           ),
@@ -53,7 +54,7 @@ class _PhotoPageState extends State<PhotoPage> {
             leading: Icon(Icons.photo_library),
             title: Text('Choisir depuis la galerie'),
             onTap: () {
-              Navigator.pop(context);
+               context.pop();
               _addPhotoFromGallery();
             },
           ),

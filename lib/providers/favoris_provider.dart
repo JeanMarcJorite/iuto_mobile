@@ -78,9 +78,14 @@ class FavorisProvider extends ChangeNotifier {
     return _favoris.any((favori) => favori.idRestaurant == restaurantId);
   }
 
-  int getFavorisCount(int restaurantId) {
-    return _allFavoris
-        .where((favori) => favori.idRestaurant == restaurantId)
-        .length;
+  Future<int> getLastFavorisId() async {
+    try {
+      return SupabaseService.getLastFavorisId().then((value) {
+        return value;
+      });
+    } catch (e) {
+      throw Exception(
+          'Erreur lors de la récupération du dernier ID de favoris : $e');
+    }
   }
 }

@@ -39,7 +39,7 @@ class SettingsPage extends StatelessWidget {
                       const Text('Êtes-vous sûr de vouloir vous déconnecter ?'),
                   actions: [
                     TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: () => context.pop(),
                       child: const Text('Annuler'),
                     ),
                     TextButton(
