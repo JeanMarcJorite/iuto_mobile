@@ -29,7 +29,6 @@ class RestaurantProvider with ChangeNotifier {
       _restaurants = data;
       _filteredRestaurants = data;
       await _loadLikedRestaurants();
-      debugPrint("Restaurants chargés : ${_restaurants.length}");
     } catch (e) {
       _error = "Erreur lors de la récupération des restaurants : $e";
       debugPrint(_error);
@@ -47,8 +46,6 @@ class RestaurantProvider with ChangeNotifier {
     try {
       final restaurant = await SupabaseService.selectRestaurantById(id);
       _selectedRestaurant = restaurant;
-      debugPrint("Restaurant chargé : ${restaurant.nom}");
-      debugPrint("Restaurant chargéID : ${restaurant.id}");
     } catch (e) {
       _error = "Erreur lors de la récupération du restaurant : $e";
       debugPrint(_error);

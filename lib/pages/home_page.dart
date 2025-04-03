@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iuto_mobile/providers/favoris_provider.dart';
 import 'package:iuto_mobile/widgets/restaurant_card.dart';
 import 'package:provider/provider.dart';
 import 'package:iuto_mobile/providers/restaurant_provider.dart';
@@ -21,6 +22,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<RestaurantProvider>(context, listen: false).loadRestaurants();
+      Provider.of<FavorisProvider>(context, listen: false).loadAllFavoris();
     });
   }
 

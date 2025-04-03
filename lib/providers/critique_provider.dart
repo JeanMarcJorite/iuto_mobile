@@ -18,7 +18,6 @@ class CritiqueProvider with ChangeNotifier {
     try {
       _critiques =
           await SupabaseService.selectCritiquesByRestaurantId(restaurantId);
-      debugPrint('Critiques chargées : $_critiques');
     } catch (e) {
       debugPrint('Erreur lors du chargement des critiques : $e');
       _critiques = [];

@@ -9,6 +9,7 @@ import 'package:iuto_mobile/pages/photo_page.dart';
 import 'package:iuto_mobile/pages/restaurants_details.dart';
 import 'package:iuto_mobile/pages/settings_page.dart';
 import 'package:iuto_mobile/providers/critique_provider.dart';
+import 'package:iuto_mobile/providers/favoris_provider.dart';
 import 'package:iuto_mobile/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:iuto_mobile/providers/restaurant_provider.dart';
@@ -27,6 +28,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => RestaurantProvider()),
         ChangeNotifierProvider(create: (_) => CritiqueProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => FavorisProvider()),
       ],
       child: const MyApp(),
     ),
@@ -98,7 +100,8 @@ final _allRoutes = GoRouter(routes: [
             builder: (context, state) {
               final restaurantId = int.parse(state.pathParameters['id']!);
               final critiqueId = state.pathParameters['critiqueId']!;
-              return AddAvisPage(restaurantId: restaurantId, idCritique: critiqueId);
+              return AddAvisPage(
+                  restaurantId: restaurantId, idCritique: critiqueId);
             }),
       ]),
   GoRoute(

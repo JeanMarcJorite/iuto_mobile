@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:iuto_mobile/providers/favoris_provider.dart';
 import 'package:iuto_mobile/providers/restaurant_provider.dart';
 import 'package:iuto_mobile/widgets/restaurant_card.dart';
 
@@ -13,11 +14,12 @@ class FavorisPage extends StatefulWidget {
 class _FavorisPageState extends State<FavorisPage> {
   @override
   Widget build(BuildContext context) {
+    final favorisProvider = Provider.of<FavorisProvider>(context);
     final restaurantProvider = Provider.of<RestaurantProvider>(context);
 
     final likedRestaurants = restaurantProvider.restaurants.where((restaurant) {
-      return restaurantProvider.likedRestaurant
-          .contains(restaurant.id.toString());
+      return favorisProvider.favoris
+          .any((favori) => favori.idRestaurant == restaurant.id);
     }).toList();
 
     return Scaffold(

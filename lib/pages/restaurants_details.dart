@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iuto_mobile/db/data/Favoris/favoris.dart';
+import 'package:iuto_mobile/providers/favoris_provider.dart';
 import 'package:iuto_mobile/widgets/like_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:iuto_mobile/providers/restaurant_provider.dart';
@@ -38,6 +40,11 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
   Widget build(BuildContext context) {
     final restaurantProvider = Provider.of<RestaurantProvider>(context);
     final critiqueProvider = Provider.of<CritiqueProvider>(context);
+    final favorisProvider =
+        Provider.of<FavorisProvider>(context, listen: false);
+    final totalFavoris = favorisProvider.allFavoris
+        .where((favori) => favori.idRestaurant == widget.restaurantId)
+        .length;
 
     final restaurant = restaurantProvider.selectedRestaurant;
 
@@ -75,8 +82,8 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                                 padding:
                                     const EdgeInsets.only(top: 58.0, left: 18),
                                 child: Container(
-                                  height: 40,
-                                  width: 40,
+                                  height: 50,
+                                  width: 50,
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(80),
@@ -93,14 +100,15 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                                 padding:
                                     const EdgeInsets.only(top: 58.0, right: 18),
                                 child: Container(
-                                  height: 40,
-                                  width: 40,
+                                  height: 50,
+                                  width: 50,
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(80),
                                   ),
                                   child: LikeWidget(
                                     restaurantId: restaurant.id,
+                                    showCount: false,
                                   ),
                                 ),
                               ),
@@ -141,6 +149,15 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                               style:
                                   const TextStyle(fontWeight: FontWeight.bold),
                             ),
+                            const SizedBox(width: 20),
+                            const Icon(Icons.favorite_rounded,
+                                color: Colors.red),
+                            const SizedBox(width: 5),
+                            Text(
+                              "$totalFavoris",
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ],
                         ),
                       ),
@@ -155,9 +172,7 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                       ),
                       ElevatedButton(
                         onPressed: () {
-                          final idCritique = const Uuid().v4();
-                          context.push(
-                              "/details/photo");
+                          context.push("/details/${widget.restaurantId}/photo");
                         },
                         child: const Text('Ajouter une image'),
                       ),

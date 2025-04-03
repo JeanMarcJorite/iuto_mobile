@@ -1,6 +1,7 @@
 import 'package:bcrypt/bcrypt.dart';
 import 'package:flutter/material.dart';
 import 'package:iuto_mobile/db/data/Critiques/critique.dart';
+import 'package:iuto_mobile/db/data/Favoris/favoris.dart';
 import 'package:iuto_mobile/db/data/Restaurants/restaurant.dart';
 import 'package:iuto_mobile/db/data/Users/src/entities/entities.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -83,8 +84,6 @@ class SupabaseService {
   static Future<List<Restaurant>> selectRestaurants() async {
     final response = await supabase.from('Restaurants').select();
 
-    debugPrint("LES RESTAURANTS Selectionnée sont : $response");
-
     List<Restaurant> restaurants = [];
     for (var restaurant in response) {
       restaurants.add(Restaurant.fromMap(restaurant));
@@ -133,5 +132,54 @@ class SupabaseService {
 
   static Future<void> insertCritique(Map<String, dynamic> critique) async {
     await supabase.from('Critiquer').insert(critique);
+  }
+
+  static Future<void> deleteCritique(int id) async {
+    await supabase.from('Critiquer').delete().eq('id', id);
+  }
+
+  static Future<void> updateCritique(Map<String, dynamic> critique) async {
+    await supabase.from('Critiquer').update(critique).eq('id', critique['id']);
+  }
+
+  static Future<List<Favoris>> selectFavoris() async {
+    try {
+      final response = await supabase.from('favoris').select();
+
+      debugPrint('Réponse brute de Supabase : $response');
+
+      final favoris =
+          response.map((favori) => Favoris.fromMap(favori)).toList();
+      debugPrint('Favoris convertis : $favoris');
+      return favoris;
+    } catch (e) {
+      debugPrint('Erreur lors de la récupération des favoris : $e');
+      return [];
+    }
+  }
+
+  static Future<List<Favoris>> selectFavorisByUserId(String userId) async {
+    try {
+      final response =
+          await supabase.from('favoris').select().eq('id_utilisateur', userId);
+
+      debugPrint('Réponse brute de Supabase : $response');
+
+      final favoris =
+          response.map((favori) => Favoris.fromMap(favori)).toList();
+      debugPrint('Favoris convertis : $favoris');
+      return favoris;
+    } catch (e) {
+      debugPrint('Erreur lors de la récupération des favoris : $e');
+      return [];
+    }
+  }
+
+  static Future<void> insertFavoris(Map<String, dynamic> favoris) async {
+    await supabase.from('favoris').insert(favoris);
+  }
+
+  static Future<void> deleteFavoris(int id) async {
+    await supabase.from('favoris').delete().eq('id', id);
   }
 }
