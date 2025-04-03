@@ -28,6 +28,7 @@ class SignUpPage extends StatelessWidget {
         MyUser myUser = MyUser.empty;
         myUser.email = _emailController.text.trim();
         myUser.pseudo = _pseudoController.text.trim();
+        myUser.mdp = _passwordController.text.trim();
         myUser.nom = _nomController.text.trim();
         myUser.prenom = _prenomController.text.trim();
 

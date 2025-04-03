@@ -5,6 +5,7 @@ import 'package:iuto_mobile/db/data/Favoris/favoris.dart';
 import 'package:iuto_mobile/db/data/Restaurants/restaurant.dart';
 import 'package:iuto_mobile/db/data/Users/src/entities/entities.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 class SupabaseService {
   static final supabase = Supabase.instance.client;
@@ -22,6 +23,8 @@ class SupabaseService {
       user.mdp = hashPassword(user.mdp);
 
       final userDocument = user.toDocument();
+      print('Tentative d\'insertion de l\'utilisateur avec mdp: ${user.mdp.isNotEmpty ? 'présent (${user.mdp.length} caractères)' : 'vide'}');
+
 
       final response = await supabase
           .from('UTILISATEURS')
