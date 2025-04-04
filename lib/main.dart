@@ -8,6 +8,7 @@ import 'package:iuto_mobile/pages/main_page.dart';
 import 'package:iuto_mobile/pages/photo_page.dart';
 import 'package:iuto_mobile/pages/restaurants_details.dart';
 import 'package:iuto_mobile/pages/settings_page.dart';
+import 'package:iuto_mobile/pages/map_page.dart';
 import 'package:iuto_mobile/providers/critique_provider.dart';
 import 'package:iuto_mobile/providers/favoris_provider.dart';
 import 'package:iuto_mobile/providers/user_provider.dart';
@@ -17,6 +18,7 @@ import 'package:go_router/go_router.dart';
 import 'package:iuto_mobile/pages/login_page.dart';
 import 'package:iuto_mobile/pages/sign_up_page.dart';
 import 'package:iuto_mobile/services/auth_gates.dart';
+import 'package:iuto_mobile/pages/restaurants_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -71,6 +73,10 @@ final _allRoutes = GoRouter(routes: [
     builder: (context, state) => const MainPage(),
   ),
   GoRoute(
+    path: '/restaurants',
+    builder: (context, state) => const RestaurantsPage(),
+  ),
+  GoRoute(
     path: '/login',
     builder: (context, state) => LoginPage(onTap: () => context.go('/signup')),
   ),
@@ -79,24 +85,34 @@ final _allRoutes = GoRouter(routes: [
     builder: (context, state) => SignUpPage(onTap: () => context.go('/login')),
   ),
   GoRoute(
+    path: '/map',
+    builder: (context, state) => const MapPage(),
+  ),
+  GoRoute(
       path: '/details/:id',
       builder: (context, state) {
         final id = state.pathParameters['id']!;
-        return RestaurantDetailsPage(restaurantId: int.parse(id));
+        final previousPage = state.extra != null && state.extra is Map<String, String>
+            ? (state.extra as Map<String, String>)['previousPage']
+            : null;
+        return RestaurantDetailsPage(
+          restaurantId: int.parse(id),
+          previousPage: previousPage,
+        );
       },
       routes: [
         GoRoute(
-          path: '/photo',
+          path: 'photo',
           builder: (context, state) => PhotoPage(),
         ),
         GoRoute(
-            path: '/avis',
+            path: 'avis',
             builder: (context, state) {
               final id = state.pathParameters['id']!;
               return AllReviewsPage(restaurantId: int.parse(id));
             }),
         GoRoute(
-            path: '/avis/add/:critiqueId',
+            path: 'avis/add/:critiqueId',
             builder: (context, state) {
               final restaurantId = int.parse(state.pathParameters['id']!);
               final critiqueId = state.pathParameters['critiqueId']!;
@@ -109,11 +125,11 @@ final _allRoutes = GoRouter(routes: [
       builder: (context, state) => const SettingsPage(),
       routes: [
         GoRoute(
-          path: '/profile/edit',
+          path: 'profile/edit',
           builder: (context, state) => const EditAccountPage(),
         ),
         GoRoute(
-          path: '/profile/advanced',
+          path: 'profile/advanced',
           builder: (context, state) => const AdvancedSettingsPage(),
         )
       ]),

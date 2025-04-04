@@ -9,8 +9,13 @@ import 'package:uuid/uuid.dart';
 
 class RestaurantDetailsPage extends StatefulWidget {
   final int restaurantId;
+  final String? previousPage;
 
-  const RestaurantDetailsPage({super.key, required this.restaurantId});
+  const RestaurantDetailsPage({
+    super.key,
+    required this.restaurantId,
+    this.previousPage,
+  });
 
   @override
   State<RestaurantDetailsPage> createState() => _RestaurantDetailsPageState();
@@ -90,7 +95,11 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                                   child: IconButton(
                                     icon: const Icon(Icons.arrow_back_outlined),
                                     onPressed: () {
-                                      context.pop();
+                                      if (widget.previousPage == 'map') {
+                                        context.go('/home');
+                                      } else {
+                                        context.pop();
+                                      }
                                     },
                                   ),
                                 ),

@@ -19,7 +19,6 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Charge les restaurants dès que la page est affichée
       Provider.of<RestaurantProvider>(context, listen: false).loadRestaurants();
     });
   }
@@ -48,7 +47,7 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
         ],
       ),
       body: restaurantProvider.isLoading
-          ? const Center(child: CircularProgressIndicator()) // Affiche un indicateur de chargement
+          ? const Center(child: CircularProgressIndicator())
           : restaurantProvider.restaurants.isEmpty
               ? const Center(child: Text('Aucun restaurant trouvé.'))
               : Column(

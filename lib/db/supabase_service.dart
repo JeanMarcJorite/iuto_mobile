@@ -87,11 +87,13 @@ class SupabaseService {
   static Future<List<Restaurant>> selectRestaurants() async {
     final response = await supabase.from('Restaurants').select();
 
-    List<Restaurant> restaurants = [];
-    for (var restaurant in response) {
-      restaurants.add(Restaurant.fromMap(restaurant));
+    if (response == null || response.isEmpty) {
+      throw Exception('Aucune donnée trouvée pour les restaurants.');
     }
-    return restaurants;
+
+    return (response as List<dynamic>)
+        .map((restaurant) => Restaurant.fromMap(restaurant as Map<String, dynamic>))
+        .toList();
   }
 
   static Future<Restaurant> selectRestaurantById(int id) async {

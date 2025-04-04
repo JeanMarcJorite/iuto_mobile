@@ -21,17 +21,15 @@ class RestaurantProvider with ChangeNotifier {
 
   Future<void> loadRestaurants() async {
     _isLoading = true;
-    _error = null;
     notifyListeners();
 
     try {
       final data = await SupabaseService.selectRestaurants();
+      debugPrint('Restaurants récupérés : $data');
       _restaurants = data;
-      _filteredRestaurants = data;
-      await _loadLikedRestaurants();
+      notifyListeners();
     } catch (e) {
-      _error = "Erreur lors de la récupération des restaurants : $e";
-      debugPrint(_error);
+      debugPrint('Erreur lors de la récupération des restaurants : $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -93,34 +91,38 @@ class RestaurantProvider with ChangeNotifier {
     bool? smoking,
   }) {
     _filteredRestaurants = _restaurants.where((restaurant) {
-      final matchesSearchQuery = searchQuery == null ||
-          searchQuery.isEmpty ||
-          restaurant.nom.toLowerCase().contains(searchQuery.toLowerCase());
-
-      final matchesVegetarian =
-          vegetarian == null || restaurant.vegetarian == vegetarian;
-      final matchesVegan = vegan == null || restaurant.vegan == vegan;
-      final matchesInternetAccess =
-          internetAccess == null || restaurant.internetAccess == internetAccess;
-      final matchesWheelchair =
-          wheelchair == null || restaurant.wheelchair == wheelchair;
-      final matchesDelivery =
-          delivery == null || restaurant.delivery == delivery;
-      final matchesTakeaway =
-          takeaway == null || restaurant.takeaway == takeaway;
-      final matchesDriveThrough =
-          driveThrough == null || restaurant.driveThrough == driveThrough;
-      final matchesSmoking = smoking == null || restaurant.smoking == smoking;
-
-      return matchesSearchQuery &&
-          matchesVegetarian &&
-          matchesVegan &&
-          matchesInternetAccess &&
-          matchesWheelchair &&
-          matchesDelivery &&
-          matchesTakeaway &&
-          matchesDriveThrough &&
-          matchesSmoking;
+      if (searchQuery != null && searchQuery.isNotEmpty) {
+        if (!restaurant.nom.toLowerCase().contains(searchQuery.toLowerCase())) {
+          return false;
+        }
+      }
+      if (vegetarian != null && vegetarian && !restaurant.vegetarian) {
+        return false;
+      }
+      if (vegan != null && vegan && !restaurant.vegan) {
+        return false;
+      }
+      if (internetAccess != null &&
+          internetAccess &&
+          !restaurant.internetAccess) {
+        return false;
+      }
+      if (wheelchair != null && wheelchair && !restaurant.wheelchair) {
+        return false;
+      }
+      if (delivery != null && delivery && !restaurant.delivery) {
+        return false;
+      }
+      if (takeaway != null && takeaway && !restaurant.takeaway) {
+        return false;
+      }
+      if (driveThrough != null && driveThrough && !restaurant.driveThrough) {
+        return false;
+      }
+      if (smoking != null && smoking && !restaurant.smoking) {
+        return false;
+      }
+      return true;
     }).toList();
 
     debugPrint("Restaurants filtrés : ${_filteredRestaurants.length}");
