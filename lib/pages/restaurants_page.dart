@@ -3,6 +3,7 @@ import 'package:iuto_mobile/db/data/Restaurants/restaurant.dart';
 import 'package:provider/provider.dart';
 import 'package:iuto_mobile/providers/restaurant_provider.dart';
 import 'package:iuto_mobile/widgets/restaurant_card.dart';
+import 'package:iuto_mobile/providers/critique_provider.dart';
 import '../widgets/filters_widgets.dart';
 import 'dart:async';
 
@@ -96,6 +97,16 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
     });
   }
 
+  Future<void> _fetchRestaurantDetailsAndCritiques(int restaurantId) async {
+    final restaurantProvider =
+        Provider.of<RestaurantProvider>(context, listen: false);
+    final critiqueProvider =
+        Provider.of<CritiqueProvider>(context, listen: false);
+
+    await restaurantProvider.loadRestaurantById(restaurantId);
+    await critiqueProvider.loadCritiquesByRestaurantId(restaurantId);
+  }
+
   @override
   Widget build(BuildContext context) {
     final restaurantProvider = Provider.of<RestaurantProvider>(context);
@@ -148,7 +159,12 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
                         itemCount: _filteredRestaurants.length,
                         itemBuilder: (context, index) {
                           final restaurant = _filteredRestaurants[index];
-                          return RestaurantCard(restaurant: restaurant);
+                          return RestaurantCard(
+                            restaurant: restaurant,
+                            width: double.infinity,
+                            height: 150,
+                            fetchRestaurantDetailsAndCritiques: _fetchRestaurantDetailsAndCritiques,
+                          );
                         },
                       ),
           ),
