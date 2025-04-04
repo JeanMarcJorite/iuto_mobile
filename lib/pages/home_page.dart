@@ -4,8 +4,21 @@ import 'package:provider/provider.dart';
 import 'package:iuto_mobile/providers/restaurant_provider.dart';
 import 'package:iuto_mobile/widgets/restaurant_card.dart';
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<RestaurantProvider>(context, listen: false).loadRestaurants();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +30,7 @@ class MyHomePage extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () {
-              context.go('/login'); // Correction ici
+              context.go('/login');
             },
             child: const Text(
               'Connexion',
@@ -45,7 +58,7 @@ class MyHomePage extends StatelessWidget {
               Center(
                 child: ElevatedButton(
                   onPressed: () {
-                    context.go('/map'); // Correction ici
+                    context.go('/map');
                   },
                   child: const Text('Voir la carte des restaurants'),
                 ),
