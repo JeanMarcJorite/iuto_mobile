@@ -1,11 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:iuto_mobile/providers/restaurant_provider.dart';
 import 'package:iuto_mobile/widgets/restaurant_card.dart';
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<RestaurantProvider>(context, listen: false).loadRestaurants();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,17 +26,6 @@ class MyHomePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('IUTables’O'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              context.go('/login'); // Correction ici
-            },
-            child: const Text(
-              'Connexion',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -40,15 +41,6 @@ class MyHomePage extends StatelessWidget {
               const Text(
                 'Bienvenue sur notre plateforme de comparateur de restaurants en ligne. Vous pouvez comparer les restaurants de la région Orléanaise.',
                 style: TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 16),
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    context.go('/map'); // Correction ici
-                  },
-                  child: const Text('Voir la carte des restaurants'),
-                ),
               ),
               const SizedBox(height: 32),
               const Text(

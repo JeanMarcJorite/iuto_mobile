@@ -3,6 +3,7 @@ import 'package:iuto_mobile/pages/home_page.dart';
 import 'package:iuto_mobile/pages/favoris_page.dart';
 import 'package:iuto_mobile/pages/account_page.dart';
 import 'package:iuto_mobile/pages/restaurants_page.dart';
+import 'package:iuto_mobile/pages/map_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -17,6 +18,7 @@ class _MainPageState extends State<MainPage> {
   final List<Widget> _pages = [
     const MyHomePage(),
     const RestaurantsPage(),
+    const MapPage(),
     const FavorisPage(),
     const AccountPage(),
   ];
@@ -39,8 +41,12 @@ class _MainPageState extends State<MainPage> {
             label: 'Accueil',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Recherche',
+            icon: Icon(Icons.list),
+            label: 'Restaurants',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.map),
+            label: 'Carte',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.favorite),
