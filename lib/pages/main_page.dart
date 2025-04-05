@@ -4,6 +4,8 @@ import 'package:iuto_mobile/pages/favoris_page.dart';
 import 'package:iuto_mobile/pages/account_page.dart';
 import 'package:iuto_mobile/pages/restaurants_page.dart';
 import 'package:iuto_mobile/pages/map_page.dart';
+import 'package:iuto_mobile/providers/favoris_provider.dart';
+import 'package:provider/provider.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -27,6 +29,15 @@ class _MainPageState extends State<MainPage> {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final favorisProvider =
+        Provider.of<FavorisProvider>(context, listen: false);
+
+    favorisProvider.loadAllFavoris();
   }
 
   @override

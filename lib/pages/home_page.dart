@@ -14,9 +14,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<RestaurantProvider>(context, listen: false).loadRestaurants();
-    });
+    Provider.of<RestaurantProvider>(context, listen: false).loadRestaurants();
   }
 
   @override
@@ -51,14 +49,17 @@ class _MyHomePageState extends State<MyHomePage> {
               restaurantProvider.isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : restaurantProvider.restaurants.isEmpty
-                      ? const Text('Aucun restaurant trouvé avec plus d\'une étoile.')
+                      ? const Text(
+                          'Aucun restaurant trouvé avec plus d\'une étoile.')
                       : ListView.builder(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: restaurantProvider.restaurants.length,
                           itemBuilder: (context, index) {
-                            final restaurant = restaurantProvider.restaurants[index];
-                            if (restaurant.stars != null && restaurant.stars! > 1) {
+                            final restaurant =
+                                restaurantProvider.restaurants[index];
+                            if (restaurant.stars != null &&
+                                restaurant.stars! > 1) {
                               return RestaurantCard(restaurant: restaurant);
                             }
                             return const SizedBox.shrink();

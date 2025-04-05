@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:iuto_mobile/db/data/Restaurants/restaurant.dart';
 import 'package:provider/provider.dart';
 import 'package:iuto_mobile/providers/restaurant_provider.dart';
 import 'package:iuto_mobile/widgets/restaurant_card.dart';
@@ -15,12 +14,11 @@ class RestaurantsPage extends StatefulWidget {
 class _RestaurantsPageState extends State<RestaurantsPage> {
   final TextEditingController _searchController = TextEditingController();
 
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<RestaurantProvider>(context, listen: false).loadRestaurants();
-    });
+    Provider.of<RestaurantProvider>(context, listen: false).loadRestaurants();
   }
 
   @override
