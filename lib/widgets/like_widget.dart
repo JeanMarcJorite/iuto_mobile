@@ -50,10 +50,6 @@ class _LikeWidgetState extends State<LikeWidget> {
         final totalLikes =
             favorisProvider.getTotalFavorisCount(widget.restaurantId);
 
-
-        debugPrint(
-            'Restaurant ID: ${widget.restaurantId}, Total Likes: $totalLikes, Is Liked: $isLiked');
-
         return Row(
           children: [
             if (widget.showCount) ...[

@@ -5,7 +5,6 @@ import 'package:iuto_mobile/db/data/Favoris/favoris.dart';
 import 'package:iuto_mobile/db/data/Restaurants/restaurant.dart';
 import 'package:iuto_mobile/db/data/Users/src/entities/entities.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:uuid/uuid.dart';
 
 class SupabaseService {
   static final SupabaseClient supabase = Supabase.instance.client;
@@ -87,7 +86,7 @@ class SupabaseService {
   static Future<List<Restaurant>> selectRestaurants() async {
     final response = await supabase.from('Restaurants').select();
 
-    if (response == null || response.isEmpty) {
+    if (response.isEmpty) {
       throw Exception('Aucune donnée trouvée pour les restaurants.');
     }
 
@@ -123,11 +122,9 @@ class SupabaseService {
       final response =
           await supabase.from('Critiquer').select().eq('idR', restaurantId);
 
-      debugPrint('Réponse brute de Supabase : $response');
 
       final critiques =
           response.map((critique) => Critique.fromMap(critique)).toList();
-      debugPrint('Critiques converties : $critiques');
       return critiques;
     } catch (e) {
       debugPrint('Erreur lors de la récupération des critiques : $e');
@@ -151,11 +148,9 @@ class SupabaseService {
     try {
       final response = await supabase.from('favoris').select();
 
-      debugPrint('Réponse brute de Supabase : $response');
 
       final favoris =
           response.map((favori) => Favoris.fromMap(favori)).toList();
-      debugPrint('Favoris convertis : $favoris');
       return favoris;
     } catch (e) {
       debugPrint('Erreur lors de la récupération des favoris : $e');
@@ -168,11 +163,9 @@ class SupabaseService {
       final response =
           await supabase.from('favoris').select().eq('id_utilisateur', userId);
 
-      debugPrint('Réponse brute de Supabase : $response');
 
       final favoris =
           response.map((favori) => Favoris.fromMap(favori)).toList();
-      debugPrint('Favoris convertis : $favoris');
       return favoris;
     } catch (e) {
       debugPrint('Erreur lors de la récupération des favoris : $e');

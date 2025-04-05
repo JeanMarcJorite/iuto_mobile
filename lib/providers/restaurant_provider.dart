@@ -24,7 +24,6 @@ class RestaurantProvider with ChangeNotifier {
 
     try {
       final data = await SupabaseService.selectRestaurants();
-      debugPrint('Restaurants récupérés : $data');
       _restaurants = data;
     } catch (e) {
       debugPrint('Erreur lors de la récupération des restaurants : $e');

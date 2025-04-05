@@ -11,6 +11,7 @@ import 'package:iuto_mobile/pages/settings_page.dart';
 import 'package:iuto_mobile/pages/map_page.dart';
 import 'package:iuto_mobile/providers/critique_provider.dart';
 import 'package:iuto_mobile/providers/favoris_provider.dart';
+import 'package:iuto_mobile/providers/image_provider.dart';
 import 'package:iuto_mobile/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:iuto_mobile/providers/restaurant_provider.dart';
@@ -31,6 +32,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => CritiqueProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => FavorisProvider()),
+        ChangeNotifierProvider(create: (_) => ImagesProvider()),
       ],
       child: const MyApp(),
     ),

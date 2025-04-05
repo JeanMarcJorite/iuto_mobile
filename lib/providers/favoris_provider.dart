@@ -16,7 +16,6 @@ class FavorisProvider extends ChangeNotifier {
 
     try {
       _allFavoris = await SupabaseService.selectFavoris();
-      debugPrint('Tous les favoris chargés : ${_allFavoris}');
     } catch (e) {
       debugPrint('Erreur lors du chargement de tous les favoris : $e');
     } finally {
@@ -37,7 +36,6 @@ class FavorisProvider extends ChangeNotifier {
 
     try {
       _favoris = await SupabaseService.selectFavorisByUserId(userId);
-      debugPrint('Favoris chargés : ${_favoris}');
     } catch (e) {
       debugPrint('Erreur lors du chargement des favoris : $e');
     } finally {
@@ -51,7 +49,6 @@ class FavorisProvider extends ChangeNotifier {
       await SupabaseService.insertFavoris(favori.toMap());
       _favoris.add(favori);
       _allFavoris.add(favori);
-      debugPrint('Favori ajouté : ${favori.toMap()}');
       notifyListeners();
     } catch (e) {
       debugPrint('Erreur lors de l\'ajout d\'un favori : $e');
@@ -63,7 +60,6 @@ class FavorisProvider extends ChangeNotifier {
       await SupabaseService.deleteFavoris(favoriId);
       _favoris.removeWhere((favori) => favori.id == favoriId);
       _allFavoris.removeWhere((favori) => favori.id == favoriId);
-      debugPrint('Favori supprimé : $favoriId');
       notifyListeners();
     } catch (e) {
       debugPrint('Erreur lors de la suppression d\'un favori : $e');
@@ -71,9 +67,6 @@ class FavorisProvider extends ChangeNotifier {
   }
 
   bool isFavorited(int restaurantId) {
-    debugPrint(
-        'Favoris : ${_favoris.map((favori) => favori.idRestaurant).toList()}');
-    debugPrint('Taille des favoris : ${_favoris.length}');
     return _favoris.any((favori) => favori.idRestaurant == restaurantId);
   }
 

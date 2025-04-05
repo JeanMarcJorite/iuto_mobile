@@ -3,10 +3,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:iuto_mobile/providers/image_provider.dart';
 import 'package:iuto_mobile/providers/user_provider.dart';
-import 'package:iuto_mobile/services/storage_services.dart';
 import 'package:provider/provider.dart';
-import 'package:uuid/uuid.dart';
 
 class RestaurantPhotoPage extends StatefulWidget {
   final int restaurantId;
@@ -17,9 +16,7 @@ class RestaurantPhotoPage extends StatefulWidget {
 }
 
 class _RestaurantPhotoPageState extends State<RestaurantPhotoPage> {
-  final List<File> _photos = [];
   final ImagePicker _picker = ImagePicker();
-  final StorageServices _storageServices = StorageServices();
 
   void _showSnackBar(String message, {Color backgroundColor = Colors.green}) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -32,46 +29,42 @@ class _RestaurantPhotoPageState extends State<RestaurantPhotoPage> {
   }
 
   Future<void> _optionImage(ImageSource source) async {
-    final XFile? image = await _picker.pickImage(source: source);
-    if (image != null) {
-      setState(() {
-        _photos.add(File(image.path));
-      });
+    final imagesProvider = Provider.of<ImagesProvider>(context, listen: false);
+    try {
+      await imagesProvider.addImage(source);
+      if (imagesProvider.localImages.isEmpty) {
+        _showSnackBar('Aucune image sélectionnée!',
+            backgroundColor: Colors.red);
+        return;
+      }
+
+      _showSnackBar('Image ajoutée avec succès!');
+    } catch (e) {
+      _showSnackBar('Erreur lors de l\'ajout de l\'image : $e',
+          backgroundColor: Colors.red);
     }
   }
 
   Future<void> _uploadImages(String userId) async {
-    if (_photos.isEmpty) {
+    final imagesProvider = Provider.of<ImagesProvider>(context, listen: false);
+
+    if (imagesProvider.localImages.isEmpty) {
       _showSnackBar('Ajouter une photo avant de télécharger!',
           backgroundColor: Colors.orange[400]!);
       return;
     }
 
-    final List<File> photosAUpload = List.from(_photos);
-
-    for (int i = 0; i < photosAUpload.length; i++) {
-      final photo = photosAUpload[i];
-      try {
-        final nomFichier = Uuid().v4();
-        final chemin =
-            'restaurants_photos/${widget.restaurantId}/$userId/$nomFichier';
-
-        await _storageServices.uploadFile(chemin, photo).then(
-          (value) async {
-            setState(() {
-              _photos.remove(photo);
-            });
-            await Future.delayed(Duration(milliseconds: 100));
-          },
-        );
-      } catch (e) {
-        _showSnackBar('Échec du téléchargement de l\'image : $e',
-            backgroundColor: Colors.red);
-      }
+    try {
+      await imagesProvider.uploadImages(
+        widget.restaurantId.toString(),
+        userId,
+      );
+      _showSnackBar('Toutes les photos ont été téléchargées avec succès!');
+      context.pop();
+    } catch (e) {
+      _showSnackBar('Erreur lors du téléchargement des images : $e',
+          backgroundColor: Colors.red);
     }
-
-    _showSnackBar('Toutes les photos ont été téléchargées avec succès!');
-    context.pop();
   }
 
   void _showPhotoOptions() {
@@ -81,16 +74,16 @@ class _RestaurantPhotoPageState extends State<RestaurantPhotoPage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           ListTile(
-            leading: Icon(Icons.camera_alt),
-            title: Text('Prendre une photo'),
+            leading: const Icon(Icons.camera_alt),
+            title: const Text('Prendre une photo'),
             onTap: () {
               context.pop();
               _optionImage(ImageSource.camera);
             },
           ),
           ListTile(
-            leading: Icon(Icons.photo_library),
-            title: Text('Choisir depuis la galerie'),
+            leading: const Icon(Icons.photo_library),
+            title: const Text('Choisir depuis la galerie'),
             onTap: () {
               context.pop();
               _optionImage(ImageSource.gallery);
@@ -98,6 +91,34 @@ class _RestaurantPhotoPageState extends State<RestaurantPhotoPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildImageGrid() {
+    final imagesProvider = Provider.of<ImagesProvider>(context);
+
+    if (imagesProvider.localImages.isEmpty) {
+      return const Center(child: Text('Aucune photo disponible.'));
+    }
+
+    return GridView.builder(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 4.0,
+        mainAxisSpacing: 4.0,
+      ),
+      itemCount: imagesProvider.localImages.length,
+      itemBuilder: (context, index) {
+        final image = imagesProvider.localImages[index];
+        return GestureDetector(
+          onTap: () => _showFullImage(image),
+          onLongPress: () => _showEditOptions(index),
+          child: Image.file(
+            image,
+            fit: BoxFit.cover,
+          ),
+        );
+      },
     );
   }
 
@@ -112,7 +133,7 @@ class _RestaurantPhotoPageState extends State<RestaurantPhotoPage> {
               Image.file(image),
               TextButton(
                 onPressed: () => context.pop(),
-                child: Text('Fermer'),
+                child: const Text('Fermer'),
               ),
             ],
           ),
@@ -128,16 +149,16 @@ class _RestaurantPhotoPageState extends State<RestaurantPhotoPage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           ListTile(
-            leading: Icon(Icons.edit),
-            title: Text('Modifier la photo'),
+            leading: const Icon(Icons.edit),
+            title: const Text('Modifier la photo'),
             onTap: () {
               context.pop();
               _editPhoto(index);
             },
           ),
           ListTile(
-            leading: Icon(Icons.delete),
-            title: Text('Supprimer la photo'),
+            leading: const Icon(Icons.delete),
+            title: const Text('Supprimer la photo'),
             onTap: () {
               context.pop();
               _deletePhoto(index);
@@ -149,18 +170,18 @@ class _RestaurantPhotoPageState extends State<RestaurantPhotoPage> {
   }
 
   void _deletePhoto(int index) {
-    setState(() {
-      _photos.removeAt(index);
-    });
+    final imagesProvider = Provider.of<ImagesProvider>(context, listen: false);
+    imagesProvider.removeImage(index);
+    _showSnackBar('Photo supprimée avec succès!');
   }
 
   void _editPhoto(int index) async {
+    final imagesProvider = Provider.of<ImagesProvider>(context, listen: false);
     final XFile? newImage =
         await _picker.pickImage(source: ImageSource.gallery);
+
     if (newImage != null) {
-      setState(() {
-        _photos[index] = File(newImage.path);
-      });
+      imagesProvider.localImages[index] = File(newImage.path);
       _showSnackBar('Photo modifiée avec succès!',
           backgroundColor: Colors.green[400]!);
     } else {
@@ -169,37 +190,61 @@ class _RestaurantPhotoPageState extends State<RestaurantPhotoPage> {
     }
   }
 
-  Widget _buildImageGrid() {
-    if (_photos.isEmpty) {
-      return Center(child: Text('Aucune photo disponible.'));
-    }
-
-    return GridView.builder(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 4.0,
-        mainAxisSpacing: 4.0,
-      ),
-      itemCount: _photos.length,
-      itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () => _showFullImage(_photos[index]),
-          onLongPress: () => _showEditOptions(index),
-          child: Image.file(
-            _photos[index],
-            fit: BoxFit.cover,
-          ),
+  void _showConfirmDeleteAllDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Confirmer la suppression'),
+          content: const Text(
+              'Êtes-vous sûr de vouloir supprimer toutes les photos locales ?'),
+          actions: [
+            TextButton(
+              onPressed: () => context.pop(),
+              child: const Text('Annuler'),
+            ),
+            TextButton(
+              onPressed: () {
+                context.pop();
+                _deleteAllPhotos();
+              },
+              child: const Text(
+                'Supprimer',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
         );
       },
     );
   }
 
+  void _deleteAllPhotos() {
+    final imagesProvider = Provider.of<ImagesProvider>(context, listen: false);
+    imagesProvider.clearLocalImages();
+    _showSnackBar('Toutes les photos ont été supprimées avec succès!');
+  }
+
   @override
   Widget build(BuildContext context) {
     final userId = Provider.of<UserProvider>(context, listen: false).user["id"];
+    final imagesProvider = Provider.of<ImagesProvider>(context, listen: false);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Photos du restaurant'),
+        title: const Text('Photos du restaurant'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_forever),
+            onPressed: () {
+              if (imagesProvider.localImages.isNotEmpty) {
+                _showConfirmDeleteAllDialog();
+              } else {
+                _showSnackBar('Aucune photo à supprimer!',
+                    backgroundColor: Colors.orange);
+              }
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -208,8 +253,8 @@ class _RestaurantPhotoPageState extends State<RestaurantPhotoPage> {
             padding: const EdgeInsets.all(8.0),
             child: ElevatedButton.icon(
               onPressed: _showPhotoOptions,
-              icon: Icon(Icons.add_a_photo),
-              label: Text('Ajouter une photo'),
+              icon: const Icon(Icons.add_a_photo),
+              label: const Text('Ajouter une photo'),
             ),
           ),
           Padding(
@@ -218,8 +263,8 @@ class _RestaurantPhotoPageState extends State<RestaurantPhotoPage> {
               onPressed: () async {
                 await _uploadImages(userId);
               },
-              icon: Icon(Icons.upload_file),
-              label: Text('Télécharger les photos'),
+              icon: const Icon(Icons.upload_file),
+              label: const Text('Télécharger les photos'),
             ),
           ),
         ],
