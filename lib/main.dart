@@ -99,6 +99,7 @@ final _allRoutes = GoRouter(routes: [
                 ? (state.extra as Map<String, String>)['previousPage']
                 : null;
         return RestaurantDetailsPage(
+          key: ValueKey('details-${DateTime.now().millisecondsSinceEpoch}'),
           restaurantId: int.parse(id),
           previousPage: previousPage,
         );
