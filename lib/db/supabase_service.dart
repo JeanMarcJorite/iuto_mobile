@@ -8,7 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 class SupabaseService {
-  static final supabase = Supabase.instance.client;
+  static final SupabaseClient supabase = Supabase.instance.client;
 
   static Future<void> init() async {
     await Supabase.initialize(

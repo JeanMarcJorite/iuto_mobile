@@ -18,9 +18,7 @@ class _RestaurantsPageState extends State<RestaurantsPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<RestaurantProvider>(context, listen: false).loadRestaurants();
-    });
+    Provider.of<RestaurantProvider>(context, listen: false).loadRestaurants();
   }
 
   @override

@@ -5,7 +5,7 @@ import 'package:iuto_mobile/pages/advanced_settings.dart';
 import 'package:iuto_mobile/pages/avis_detail_page.dart';
 import 'package:iuto_mobile/pages/edit_account_page.dart';
 import 'package:iuto_mobile/pages/main_page.dart';
-import 'package:iuto_mobile/pages/photo_page.dart';
+import 'package:iuto_mobile/pages/restaurant_photo_page.dart';
 import 'package:iuto_mobile/pages/restaurants_details.dart';
 import 'package:iuto_mobile/pages/settings_page.dart';
 import 'package:iuto_mobile/pages/map_page.dart';
@@ -92,9 +92,10 @@ final _allRoutes = GoRouter(routes: [
       path: '/details/:id',
       builder: (context, state) {
         final id = state.pathParameters['id']!;
-        final previousPage = state.extra != null && state.extra is Map<String, String>
-            ? (state.extra as Map<String, String>)['previousPage']
-            : null;
+        final previousPage =
+            state.extra != null && state.extra is Map<String, String>
+                ? (state.extra as Map<String, String>)['previousPage']
+                : null;
         return RestaurantDetailsPage(
           restaurantId: int.parse(id),
           previousPage: previousPage,
@@ -103,7 +104,12 @@ final _allRoutes = GoRouter(routes: [
       routes: [
         GoRoute(
           path: 'photo',
-          builder: (context, state) => PhotoPage(),
+          builder: (context, state) {
+            final id = state.pathParameters['id']!;
+            return RestaurantPhotoPage(
+              restaurantId: int.parse(id),
+            );
+          },
         ),
         GoRoute(
             path: 'avis',

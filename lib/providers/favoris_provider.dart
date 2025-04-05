@@ -13,7 +13,6 @@ class FavorisProvider extends ChangeNotifier {
 
   Future<void> loadAllFavoris() async {
     _isLoading = true;
-    notifyListeners();
 
     try {
       _allFavoris = await SupabaseService.selectFavoris();

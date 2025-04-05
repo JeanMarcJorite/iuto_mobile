@@ -21,13 +21,11 @@ class RestaurantProvider with ChangeNotifier {
 
   Future<void> loadRestaurants() async {
     _isLoading = true;
-    notifyListeners();
 
     try {
       final data = await SupabaseService.selectRestaurants();
       debugPrint('Restaurants récupérés : $data');
       _restaurants = data;
-      notifyListeners();
     } catch (e) {
       debugPrint('Erreur lors de la récupération des restaurants : $e');
     } finally {
@@ -39,7 +37,6 @@ class RestaurantProvider with ChangeNotifier {
   Future<void> loadRestaurantById(int id) async {
     _isLoading = true;
     _error = null;
-    notifyListeners();
 
     try {
       final restaurant = await SupabaseService.selectRestaurantById(id);

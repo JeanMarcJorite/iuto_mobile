@@ -25,9 +25,7 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fetchRestaurantDetailsAndCritiques();
-    });
+    _fetchRestaurantDetailsAndCritiques();
   }
 
   Future<void> _fetchRestaurantDetailsAndCritiques() async {
@@ -44,8 +42,8 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
   Widget build(BuildContext context) {
     final restaurantProvider = Provider.of<RestaurantProvider>(context);
     final critiqueProvider = Provider.of<CritiqueProvider>(context);
-    final favorisProvider =
-        Provider.of<FavorisProvider>(context, listen: false);
+
+    final favorisProvider = Provider.of<FavorisProvider>(context);
     final totalFavoris = favorisProvider.allFavoris
         .where((favori) => favori.idRestaurant == widget.restaurantId)
         .length;
