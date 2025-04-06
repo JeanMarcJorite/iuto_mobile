@@ -17,13 +17,24 @@ class UserProvider with ChangeNotifier {
   bool get isLoggedIn => _user.isNotEmpty;
 
   Future<void> fetchUser() async {
-    final session = Supabase.instance.client.auth.currentSession;
-    if (session != null) {
-      final userId = session.user.id;
-      _user = await SupabaseService.selectUserById(userId);
-      notifyListeners();
+  final session = Supabase.instance.client.auth.currentSession;
+  if (session != null) {
+    final userId = session.user.id;
+    try {
+      final fetchedUser = await SupabaseService.selectUserById(userId);
+      if (fetchedUser.isNotEmpty) {
+        _user = fetchedUser;
+      } else {
+        debugPrint('Aucun utilisateur trouvé pour l\'ID : $userId');
+        _user = {}; // Si aucun utilisateur n'est trouvé
+      }
+    } catch (e) {
+      debugPrint('Erreur lors de la récupération des données utilisateur : $e');
+      _user = {}; // En cas d'erreur, définissez une map vide
     }
+    notifyListeners();
   }
+}
 
   Future<void> logOut(BuildContext context) async {
     _user = {};
