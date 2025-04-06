@@ -96,14 +96,24 @@ Future<bool> userExists(String email) async {
     return BCrypt.hashpw(password, BCrypt.gensalt());
   }
 
-  static Future<Map<String, dynamic>> selectUserById(String id) async {
+ static Future<Map<String, dynamic>> selectUserById(String id) async {
+  try {
     final response = await supabase
         .from('UTILISATEURS')
         .select()
         .eq('id', id)
-        .then((value) => value[0]);
+        .maybeSingle(); // Utilisez maybeSingle pour éviter les erreurs si aucun résultat n'est trouvé
+
+    if (response == null) {
+      throw Exception('Aucun utilisateur trouvé avec cet ID.');
+    }
+
     return response;
+  } catch (e) {
+    debugPrint('Erreur lors de la récupération de l\'utilisateur : $e');
+    return {}; // Retournez une map vide en cas d'erreur
   }
+}
 
   static Future<List<Restaurant>> selectRestaurants() async {
     final response = await supabase.from('Restaurants').select();
