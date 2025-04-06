@@ -22,6 +22,17 @@ class RestaurantProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
+  Map<String, dynamic> get activeFilters => Map.from(_activeFilters);
+
+  // Ajouter une propriété pour vérifier si des filtres sont actifs
+  bool get hasActiveFilters => _activeFilters.entries
+      .where((entry) => entry.key != 'searchQuery')
+      .any((entry) => entry.value == true) || 
+      (_activeFilters['searchQuery'] != null && _activeFilters['searchQuery'].toString().isNotEmpty);
+  
+  // Ajouter une propriété pour vérifier si aucun restaurant ne correspond aux filtres actifs
+  bool get hasNoResults => hasActiveFilters && _filteredRestaurants.isEmpty;
+
   Future<void> loadRestaurants() async {
     _isLoading = true;
     notifyListeners();
@@ -58,18 +69,41 @@ class RestaurantProvider with ChangeNotifier {
   }
 
   void setFilters(Map<String, dynamic> filters) {
-    _activeFilters = filters;
-    _applyFilters();
+    bool hasChanged = false;
+    filters.forEach((key, value) {
+      if (_activeFilters[key] != value) {
+        hasChanged = true;
+      }
+    });
+
+    if (hasChanged) {
+      _activeFilters = Map.from(filters);
+      _applyFilters();
+    }
   }
 
   void clearFilters() {
     debugPrint("Suppression des filtres");
-    _activeFilters = {};
-    _filteredRestaurants = [];
+    _activeFilters = {}; // Réinitialiser tous les filtres
+    _filteredRestaurants = []; // Réinitialiser les résultats filtrés
     notifyListeners();
   }
 
   void _applyFilters() {
+    bool hasActiveFiltersLocal = _activeFilters.entries
+        .where((entry) => entry.key != 'searchQuery')
+        .any((entry) => entry.value == true);
+
+    if (!hasActiveFiltersLocal &&
+        (_activeFilters['searchQuery'] == null ||
+            _activeFilters['searchQuery'].isEmpty)) {
+      _filteredRestaurants = []; 
+      debugPrint("Aucun filtre actif, affichage de tous les restaurants");
+      notifyListeners();
+      return;
+    }
+
+    debugPrint("Application des filtres: $_activeFilters");
     _filteredRestaurants = _allRestaurants.where((restaurant) {
       if (_activeFilters['searchQuery'] != null &&
           _activeFilters['searchQuery'].isNotEmpty) {
@@ -109,7 +143,14 @@ class RestaurantProvider with ChangeNotifier {
       return true;
     }).toList();
 
-    debugPrint("${_filteredRestaurants.length} restaurants après filtrage");
+    debugPrint(
+        "${_filteredRestaurants.length} restaurants après filtrage sur ${_allRestaurants.length} restaurants total");
+    
+    // Afficher un log si aucun restaurant ne correspond aux filtres
+    if (_filteredRestaurants.isEmpty) {
+      debugPrint("ATTENTION: Aucun restaurant ne correspond aux filtres actifs!");
+    }
+    
     notifyListeners();
   }
 
