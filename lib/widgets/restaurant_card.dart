@@ -72,32 +72,10 @@ class RestaurantCard extends StatelessWidget {
       borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
       child: AspectRatio(
         aspectRatio: 16 / 9,
-        child: restaurant.photo != null && restaurant.photo!.isNotEmpty
-            ? Image.network(
-                restaurant.photo!,
-                fit: BoxFit.cover,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Center(
-                    child: CircularProgressIndicator(
-                      value: loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
-                          : null,
-                    ),
-                  );
-                },
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[200],
-                    child: const Icon(Icons.restaurant, size: 48),
-                  );
-                },
-              )
-            : Container(
-                color: Colors.grey[200],
-                child: const Center(child: Icon(Icons.restaurant, size: 48)),
-              ),
+        child: Image.asset(
+          'assets/images/lounge.jpg',
+          fit: BoxFit.cover,
+        ),
       ),
     );
   }
