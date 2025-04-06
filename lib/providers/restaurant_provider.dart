@@ -4,7 +4,7 @@ import 'package:iuto_mobile/db/supabase_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RestaurantProvider with ChangeNotifier {
-  List<Restaurant> _restaurants = [];
+  List<Restaurant> _allRestaurants = [];
   List<Restaurant> _filteredRestaurants = [];
   Restaurant? _selectedRestaurant;
   List<String> _restoLike = [];
@@ -13,7 +13,10 @@ class RestaurantProvider with ChangeNotifier {
   String? _error;
 
   List<Restaurant> get restaurants =>
-      _filteredRestaurants.isNotEmpty ? _filteredRestaurants : _restaurants;
+      _filteredRestaurants.isNotEmpty ? _filteredRestaurants : _allRestaurants;
+
+  List<Restaurant> get allRestaurants => _allRestaurants;
+
   List<String> get likedRestaurant => _restoLike;
   Restaurant? get selectedRestaurant => _selectedRestaurant;
   bool get isLoading => _isLoading;
@@ -21,12 +24,16 @@ class RestaurantProvider with ChangeNotifier {
 
   Future<void> loadRestaurants() async {
     _isLoading = true;
+    notifyListeners();
 
     try {
       final data = await SupabaseService.selectRestaurants();
-      _restaurants = data;
+      _allRestaurants = data;
+      _filteredRestaurants = [];
+      _activeFilters = {};
     } catch (e) {
-      debugPrint('Erreur lors de la récupération des restaurants : $e');
+      _error = 'Erreur lors de la récupération des restaurants : $e';
+      debugPrint(_error);
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -36,6 +43,7 @@ class RestaurantProvider with ChangeNotifier {
   Future<void> loadRestaurantById(int id) async {
     _isLoading = true;
     _error = null;
+    notifyListeners();
 
     try {
       final restaurant = await SupabaseService.selectRestaurantById(id);
@@ -51,77 +59,57 @@ class RestaurantProvider with ChangeNotifier {
 
   void setFilters(Map<String, dynamic> filters) {
     _activeFilters = filters;
-    filterRestaurants(
-      searchQuery: filters['searchQuery'],
-      vegetarian: filters['isVegetarian'],
-      vegan: filters['isVegan'],
-      internetAccess: filters['internetAccess'],
-      wheelchair: filters['wheelchair'],
-      delivery: filters['delivery'],
-      takeaway: filters['takeaway'],
-      driveThrough: filters['driveThrough'],
-      smoking: filters['smoking'],
-    );
+    _applyFilters();
   }
 
   void clearFilters() {
-    debugPrint("clearFilters appelé");
+    debugPrint("Suppression des filtres");
     _activeFilters = {};
-    _filteredRestaurants = _restaurants;
+    _filteredRestaurants = [];
     notifyListeners();
   }
 
-  Map<String, dynamic> getActiveFilters() {
-    return _activeFilters;
-  }
-
-  void filterRestaurants({
-    String? searchQuery,
-    bool? vegetarian,
-    bool? vegan,
-    bool? internetAccess,
-    bool? wheelchair,
-    bool? delivery,
-    bool? takeaway,
-    bool? driveThrough,
-    bool? smoking,
-  }) {
-    _filteredRestaurants = _restaurants.where((restaurant) {
-      if (searchQuery != null && searchQuery.isNotEmpty) {
-        if (!restaurant.nom.toLowerCase().contains(searchQuery.toLowerCase())) {
+  void _applyFilters() {
+    _filteredRestaurants = _allRestaurants.where((restaurant) {
+      if (_activeFilters['searchQuery'] != null &&
+          _activeFilters['searchQuery'].isNotEmpty) {
+        if (!restaurant.nom
+            .toLowerCase()
+            .contains(_activeFilters['searchQuery'].toLowerCase())) {
           return false;
         }
       }
-      if (vegetarian != null && vegetarian && !restaurant.vegetarian) {
+
+      if (_activeFilters['isVegetarian'] == true && !restaurant.vegetarian) {
         return false;
       }
-      if (vegan != null && vegan && !restaurant.vegan) {
+      if (_activeFilters['isVegan'] == true && !restaurant.vegan) {
         return false;
       }
-      if (internetAccess != null &&
-          internetAccess &&
+      if (_activeFilters['internetAccess'] == true &&
           !restaurant.internetAccess) {
         return false;
       }
-      if (wheelchair != null && wheelchair && !restaurant.wheelchair) {
+      if (_activeFilters['wheelchair'] == true && !restaurant.wheelchair) {
         return false;
       }
-      if (delivery != null && delivery && !restaurant.delivery) {
+      if (_activeFilters['delivery'] == true && !restaurant.delivery) {
         return false;
       }
-      if (takeaway != null && takeaway && !restaurant.takeaway) {
+      if (_activeFilters['takeaway'] == true && !restaurant.takeaway) {
         return false;
       }
-      if (driveThrough != null && driveThrough && !restaurant.driveThrough) {
+      if (_activeFilters['driveThrough'] == true && !restaurant.driveThrough) {
         return false;
       }
-      if (smoking != null && smoking && !restaurant.smoking) {
+      if (_activeFilters['smoking'] == true && !restaurant.smoking) {
         return false;
       }
+
       return true;
     }).toList();
 
-    debugPrint("Restaurants filtrés : ${_filteredRestaurants.length}");
+    debugPrint("${_filteredRestaurants.length} restaurants après filtrage");
     notifyListeners();
   }
 
@@ -149,5 +137,20 @@ class RestaurantProvider with ChangeNotifier {
 
   Future<bool> isRestaurantLiked(int restaurantId) async {
     return _restoLike.contains(restaurantId.toString());
+  }
+
+  void updateRestaurants(List<Restaurant> updatedRestaurants) {
+    _allRestaurants = updatedRestaurants;
+    _applyFilters();
+    notifyListeners();
+  }
+
+  void updateRestaurant(Restaurant restaurant) {
+    final index = _allRestaurants.indexWhere((r) => r.id == restaurant.id);
+    if (index != -1) {
+      _allRestaurants[index] = restaurant;
+      _applyFilters();
+      notifyListeners();
+    }
   }
 }

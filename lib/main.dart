@@ -5,12 +5,14 @@ import 'package:iuto_mobile/pages/advanced_settings.dart';
 import 'package:iuto_mobile/pages/avis_detail_page.dart';
 import 'package:iuto_mobile/pages/edit_account_page.dart';
 import 'package:iuto_mobile/pages/main_page.dart';
+import 'package:iuto_mobile/pages/recherche_page.dart';
 import 'package:iuto_mobile/pages/restaurant_photo_page.dart';
 import 'package:iuto_mobile/pages/restaurants_details.dart';
 import 'package:iuto_mobile/pages/settings_page.dart';
 import 'package:iuto_mobile/pages/map_page.dart';
 import 'package:iuto_mobile/providers/critique_provider.dart';
 import 'package:iuto_mobile/providers/favoris_provider.dart';
+import 'package:iuto_mobile/providers/geolocalisation_provider.dart';
 import 'package:iuto_mobile/providers/image_provider.dart';
 import 'package:iuto_mobile/providers/user_provider.dart';
 import 'package:provider/provider.dart';
@@ -33,6 +35,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => FavorisProvider()),
         ChangeNotifierProvider(create: (_) => ImagesProvider()),
+        ChangeNotifierProvider(create: (_) => GeolocalisationProvider()),
       ],
       child: const MyApp(),
     ),
@@ -60,6 +63,12 @@ class MyApp extends StatelessWidget {
           selectedItemColor: Colors.blue,
           unselectedItemColor: Colors.grey,
         ),
+        pageTransitionsTheme: PageTransitionsTheme(
+          builders: {
+            TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+            TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          },
+        ),
       ),
     );
   }
@@ -71,13 +80,14 @@ final _allRoutes = GoRouter(routes: [
     builder: (context, state) => const AuthGates(),
   ),
   GoRoute(
-    path: '/home',
-    builder: (context, state) => const MainPage(),
-  ),
+      path: '/home',
+      builder: (context, state) {
+        return MainPage();
+      }),
   GoRoute(
-    path: '/restaurants',
-    builder: (context, state) => const RestaurantsPage(),
-  ),
+      path: "/recherche",
+      builder: (context, state) =>
+          RecherchePage(search: state.uri.queryParameters['search'] ?? '')),
   GoRoute(
     path: '/login',
     builder: (context, state) => LoginPage(onTap: () => context.go('/signup')),

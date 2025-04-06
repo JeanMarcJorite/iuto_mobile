@@ -27,6 +27,7 @@ class Restaurant {
   final String? facebook;
   final bool smoking;
   final int? idCommune;
+  double? distance;
 
   Restaurant({
     required this.id,
@@ -57,11 +58,14 @@ class Restaurant {
     this.facebook,
     required this.smoking,
     this.idCommune,
+    this.distance,
   });
 
   factory Restaurant.fromMap(Map<String, dynamic> map) {
     return Restaurant(
-      id: map['id'] != null ? int.tryParse(map['id'].toString()) ?? 0 : 0, // Gestion sécurisée pour id
+      id: map['id'] != null
+          ? int.tryParse(map['id'].toString()) ?? 0
+          : 0, // Gestion sécurisée pour id
       nom: map['nom'] as String? ?? '',
       adresse: map['adresse'] as String? ?? '',
       telephone: map['phone'] as String? ?? '',
@@ -71,11 +75,19 @@ class Restaurant {
       internetAccess: map['internet_access'] as bool? ?? false,
       wheelchair: map['wheelchair'] as bool? ?? false,
       type: map['typeR'] as String? ?? '',
-      longitude: map['longitude'] != null ? double.tryParse(map['longitude'].toString()) ?? 0.0 : 0.0,
-      latitude: map['latitude'] != null ? double.tryParse(map['latitude'].toString()) ?? 0.0 : 0.0,
+      longitude: map['longitude'] != null
+          ? double.tryParse(map['longitude'].toString()) ?? 0.0
+          : 0.0,
+      latitude: map['latitude'] != null
+          ? double.tryParse(map['latitude'].toString()) ?? 0.0
+          : 0.0,
       brand: map['brand'] as String?,
-      capacity: map['capacity'] != null ? int.tryParse(map['capacity'].toString()) : null,
-      stars: map['stars'] != null ? double.tryParse(map['stars'].toString()) : null,
+      capacity: map['capacity'] != null
+          ? int.tryParse(map['capacity'].toString())
+          : null,
+      stars: map['stars'] != null
+          ? double.tryParse(map['stars'].toString())
+          : null,
       website: map['website'] as String?,
       map: map['map'] as String?,
       operator: map['operator'] as String?,
@@ -88,7 +100,78 @@ class Restaurant {
       brandWikidata: map['brand_wikidata'] as String?,
       facebook: map['facebook'] as String?,
       smoking: map['smoking'] as bool? ?? false,
-      idCommune: map['idC'] != null ? int.tryParse(map['idC'].toString()) : null,
+      idCommune:
+          map['idC'] != null ? int.tryParse(map['idC'].toString()) : null,
+      distance: null,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'nom': nom,
+      'adresse': adresse,
+      'telephone': telephone,
+      'photo': photo,
+      'siret': siret,
+      'opening_hours': openingHours,
+      'internet_access': internetAccess,
+      'wheelchair': wheelchair,
+      'typeR': type,
+      'longitude': longitude,
+      'latitude': latitude,
+      'brand': brand,
+      'capacity': capacity,
+      'stars': stars,
+      'website': website,
+      'map': map,
+      'operator': operator,
+      'vegetarian': vegetarian,
+      'vegan': vegan,
+      'delivery': delivery,
+      'takeaway': takeaway,
+      'drive_through': driveThrough,
+      'wikidata': wikidata,
+      'brand_wikidata': brandWikidata,
+      'facebook': facebook,
+      'smoking': smoking,
+      'idC': idCommune,
+      'distance': distance,
+    };
+  }
+
+  copyWith({double? distance}) {
+    return Restaurant(
+      id: id,
+      nom: nom,
+      adresse: adresse,
+      telephone: telephone,
+      photo: photo,
+      siret: siret,
+      openingHours: openingHours,
+      internetAccess: internetAccess,
+      wheelchair: wheelchair,
+      type: type,
+      longitude: longitude,
+      latitude: latitude,
+      brand: brand,
+      capacity: capacity,
+      stars: stars,
+      website: website,
+      map: map,
+      operator: operator,
+      vegetarian: vegetarian,
+      vegan: vegan,
+      delivery: delivery,
+      takeaway: takeaway,
+      driveThrough: driveThrough,
+      wikidata: wikidata,
+      brandWikidata: brandWikidata,
+      facebook: facebook,
+      smoking: smoking,
+      idCommune: idCommune ?? this.idCommune, // Conserver la valeur d'origine
+      distance:
+          distance ?? this.distance, // Mettre à jour la distance si fournie
     );
   }
 }

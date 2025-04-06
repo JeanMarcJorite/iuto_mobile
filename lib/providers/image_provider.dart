@@ -8,11 +8,9 @@ class ImagesProvider extends ChangeNotifier {
   final StorageServices _storageServices = StorageServices();
   final ImagePicker _picker = ImagePicker();
 
-  // Liste des images locales (avant téléchargement)
   final List<File> _localImages = [];
   List<File> get localImages => _localImages;
 
-  // Liste des URLs des images récupérées depuis Supabase
   List<String> _imageUrls = [];
   List<String> get imageUrls => _imageUrls;
 
@@ -20,7 +18,6 @@ class ImagesProvider extends ChangeNotifier {
   bool get isLoading => _isLoading; 
 
 
-  /// Récupérer les images d'un restaurant spécifique
   Future<void> fetchImagesByRestaurantId(String restaurantId) async {
     _isLoading = true;
     try {
@@ -35,7 +32,6 @@ class ImagesProvider extends ChangeNotifier {
     }
   }
 
-  /// Récupérer les images d'un utilisateur spécifique dans un restaurant
   Future<void> fetchImagesByUserId(String restaurantId, String userId) async {
     _isLoading = true;
 
@@ -54,7 +50,6 @@ class ImagesProvider extends ChangeNotifier {
     }
   }
 
-  /// Ajouter une image depuis la caméra ou la galerie
   Future<void> addImage(ImageSource source) async {
     try {
       final XFile? pickedImage = await _picker.pickImage(source: source);
@@ -67,7 +62,6 @@ class ImagesProvider extends ChangeNotifier {
     }
   }
 
-  /// Supprimer une image locale
   void removeImage(int index) {
     if (index >= 0 && index < _localImages.length) {
       _localImages.removeAt(index);
@@ -75,7 +69,6 @@ class ImagesProvider extends ChangeNotifier {
     }
   }
 
-  /// Télécharger les images locales sur le serveur
   Future<void> uploadImages(String restaurantId, String userId) async {
     for (int i = 0; i < _localImages.length; i++) {
       final image = _localImages[i];
@@ -93,7 +86,6 @@ class ImagesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// effacer toutes les images locales
   void clearLocalImages() {
     _localImages.clear();
     notifyListeners();
