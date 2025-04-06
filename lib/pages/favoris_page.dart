@@ -17,7 +17,8 @@ class _FavorisPageState extends State<FavorisPage> {
     final favorisProvider = Provider.of<FavorisProvider>(context);
     final restaurantProvider = Provider.of<RestaurantProvider>(context);
 
-    final likedRestaurants = restaurantProvider.restaurants.where((restaurant) {
+    final likedRestaurants =
+        restaurantProvider.allRestaurants.where((restaurant) {
       return favorisProvider.favoris
           .any((favori) => favori.idRestaurant == restaurant.id);
     }).toList();
@@ -38,7 +39,9 @@ class _FavorisPageState extends State<FavorisPage> {
               itemCount: likedRestaurants.length,
               itemBuilder: (context, index) {
                 final restaurant = likedRestaurants[index];
-                return RestaurantCard(restaurant: restaurant);
+                return RestaurantCard(
+                  restaurant: restaurant,
+                );
               },
             ),
     );

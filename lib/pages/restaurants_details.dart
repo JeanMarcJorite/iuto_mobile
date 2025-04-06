@@ -1,10 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iuto_mobile/db/data/Critiques/critique.dart';
+import 'package:iuto_mobile/db/data/Restaurants/restaurant.dart';
 import 'package:iuto_mobile/providers/favoris_provider.dart';
-import 'package:iuto_mobile/widgets/like_widget.dart';
-import 'package:provider/provider.dart';
+import 'package:iuto_mobile/providers/geolocalisation_provider.dart';
+import 'package:iuto_mobile/providers/image_provider.dart';
 import 'package:iuto_mobile/providers/restaurant_provider.dart';
 import 'package:iuto_mobile/providers/critique_provider.dart';
+import 'package:iuto_mobile/widgets/like_widget.dart';
+import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
 class RestaurantDetailsPage extends StatefulWidget {
@@ -22,224 +29,429 @@ class RestaurantDetailsPage extends StatefulWidget {
 }
 
 class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
+  late StreamSubscription<Position> _positionSubscription;
+  Restaurant? _restaurant;
+  List<String> _imageUrls = [];
+  List<Critique> _critiques = [];
+  double _averageRating = 0;
+  int _totalFavorites = 0;
+  bool _isLoading = true;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fetchRestaurantDetailsAndCritiques();
+      _initializeData();
     });
   }
 
-  Future<void> _fetchRestaurantDetailsAndCritiques() async {
+  Future<void> _initializeData() async {
+    setState(() => _isLoading = true);
+
     final restaurantProvider =
         Provider.of<RestaurantProvider>(context, listen: false);
+    await restaurantProvider.loadRestaurantById(widget.restaurantId);
+    _restaurant = restaurantProvider.selectedRestaurant;
+
     final critiqueProvider =
         Provider.of<CritiqueProvider>(context, listen: false);
-
-    await restaurantProvider.loadRestaurantById(widget.restaurantId);
     await critiqueProvider.loadCritiquesByRestaurantId(widget.restaurantId);
+    _critiques = critiqueProvider.critiques;
+    _averageRating = critiqueProvider.noteMoyenne;
+
+    try {
+      final imagesProvider =
+          Provider.of<ImagesProvider>(context, listen: false);
+      await imagesProvider
+          .fetchImagesByRestaurantId(widget.restaurantId.toString());
+      _imageUrls = imagesProvider.imageUrls;
+    } catch (e) {
+      debugPrint('Erreur lors de la récupération des images : $e');
+    }
+
+    final favorisProvider =
+        Provider.of<FavorisProvider>(context, listen: false);
+    _totalFavorites = favorisProvider.allFavoris
+        .where((favori) => favori.idRestaurant == widget.restaurantId)
+        .length;
+
+    _setupLocationListener();
+    setState(() => _isLoading = false);
+  }
+
+  void _setupLocationListener() {
+    final geoProvider =
+        Provider.of<GeolocalisationProvider>(context, listen: false);
+
+    _calculateDistance();
+
+    _positionSubscription = geoProvider.positionStream.listen((_) {
+      if (mounted) {
+        _calculateDistance();
+      }
+    });
+  }
+
+  Future<void> _calculateDistance() async {
+    final geoProvider =
+        Provider.of<GeolocalisationProvider>(context, listen: false);
+    final restaurantProvider =
+        Provider.of<RestaurantProvider>(context, listen: false);
+
+    if (_restaurant != null && geoProvider.currentPosition != null) {
+      final distance = await geoProvider.calculerDistance(
+        _restaurant!.latitude,
+        _restaurant!.longitude,
+      );
+
+      if (mounted) {
+        setState(() {
+          _restaurant = _restaurant!
+              .copyWith(distance: distance != null ? distance / 1000 : null);
+          restaurantProvider.updateRestaurant(_restaurant!);
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _positionSubscription.cancel();
+    super.dispose();
+  }
+
+  void _showFullImage(String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.9,
+                maxHeight: MediaQuery.of(context).size.height * 0.7,
+              ),
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.broken_image,
+                  size: 50,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Fermer'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final restaurantProvider = Provider.of<RestaurantProvider>(context);
-    final critiqueProvider = Provider.of<CritiqueProvider>(context);
-    final favorisProvider =
-        Provider.of<FavorisProvider>(context, listen: false);
-    final totalFavoris = favorisProvider.allFavoris
-        .where((favori) => favori.idRestaurant == widget.restaurantId)
-        .length;
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-    final restaurant = restaurantProvider.selectedRestaurant;
+    if (_restaurant == null) {
+      return const Center(child: Text('Restaurant non trouvé'));
+    }
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      body: restaurantProvider.isLoading || critiqueProvider.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : restaurant == null
-              ? const Center(
-                  child: Text('Erreur lors du chargement du restaurant.'))
-              : SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      Stack(
-                        children: [
-                          Container(
-                            height: 300,
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                image: restaurant.photo != null &&
-                                        restaurant.photo!.isNotEmpty
-                                    ? NetworkImage(restaurant.photo!)
-                                    : const AssetImage(
-                                            'assets/images/restaurant_defaut_2.jpg')
-                                        as ImageProvider,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Padding(
-                                padding:
-                                    const EdgeInsets.only(top: 58.0, left: 18),
-                                child: Container(
-                                  height: 50,
-                                  width: 50,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(80),
-                                  ),
-                                  child: IconButton(
-                                    icon: const Icon(Icons.arrow_back_outlined),
-                                    onPressed: () {
-                                      if (widget.previousPage == 'map') {
-                                        context.go('/home');
-                                      } else {
-                                        context.pop();
-                                      }
-                                    },
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.only(top: 58.0, right: 18),
-                                child: Container(
-                                  height: 50,
-                                  width: 50,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(80),
-                                  ),
-                                  child: LikeWidget(
-                                    restaurantId: restaurant.id,
-                                    showCount: false,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: Text(
-                          restaurant.nom,
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.star, color: Colors.orange),
-                            const SizedBox(width: 5),
-                            Text(
-                              "${critiqueProvider.noteMoyenne} / 5",
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(width: 20),
-                            const Icon(Icons.comment, color: Colors.blue),
-                            const SizedBox(width: 5),
-                            Text(
-                              "${critiqueProvider.critiques.length} avis",
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(width: 20),
-                            const Icon(Icons.favorite_rounded,
-                                color: Colors.red),
-                            const SizedBox(width: 5),
-                            Text(
-                              "$totalFavoris",
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: () {
-                          final idCritique = const Uuid().v4();
-                          context.push(
-                              "/details/${widget.restaurantId}/avis/add/${idCritique}");
-                        },
-                        child: const Text('Ajouter un avis'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          context.push("/details/${widget.restaurantId}/photo");
-                        },
-                        child: const Text('Ajouter une image'),
-                      ),
-                      const SizedBox(height: 20),
-                      Padding(
-                        padding: const EdgeInsets.all(18.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                const Expanded(
-                                  child: Text(
-                                    "Avis des utilisateurs",
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    context.push(
-                                      "/details/${widget.restaurantId}/avis",
-                                    );
-                                  },
-                                  child: Text(
-                                    "Voir tous",
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Theme.of(context).primaryColor,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            ...critiqueProvider.critiques.reversed
-                                .take(2)
-                                .map((critique) {
-                              return Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 8.0),
-                                child: ListTile(
-                                  leading: const Icon(Icons.person),
-                                  title: Text(critique.commentaire),
-                                  subtitle: Text(
-                                    "Note : ${critique.note} / 5",
-                                    style: const TextStyle(color: Colors.grey),
-                                  ),
-                                ),
-                              );
-                            }),
-                          ],
-                        ),
-                      ),
-                    ],
+      body: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              expandedHeight: 300,
+              flexibleSpace: FlexibleSpaceBar(
+                background: Image.asset(
+                  'assets/images/restaurant_defaut_2.jpg',
+                  fit: BoxFit.cover,
+                ),
+              ),
+              pinned: true,
+              leading: IconButton(
+                icon: const CircleAvatar(
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.arrow_back, color: Colors.black),
+                ),
+                onPressed: () => widget.previousPage == 'map'
+                    ? context.go('/home')
+                    : context.pop(),
+              ),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: CircleAvatar(
+                    backgroundColor: Colors.white,
+                    child: LikeWidget(
+                      restaurantId: _restaurant!.id,
+                      showCount: false,
+                    ),
                   ),
                 ),
+              ],
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildRestaurantHeader(_restaurant!),
+                    _buildStatsRow(),
+                    _buildActionButtons(context),
+                    _buildImageGallerie(),
+                    _buildCritiqueSection(context),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRestaurantIcons(Restaurant restaurant) {
+    return Wrap(
+      spacing: 8.0,
+      runSpacing: 4.0,
+      children: [
+        if (restaurant.internetAccess)
+          const Tooltip(
+            message: 'Wi-Fi disponible',
+            child: Icon(Icons.wifi, size: 16, color: Colors.blue),
+          ),
+        if (restaurant.wheelchair)
+          const Tooltip(
+            message: 'Accessible PMR',
+            child: Icon(Icons.accessible, size: 16, color: Colors.green),
+          ),
+        if (restaurant.vegetarian)
+          const Tooltip(
+            message: 'Options végétariennes',
+            child: Icon(Icons.eco, size: 16, color: Colors.lightGreen),
+          ),
+        if (restaurant.vegan)
+          const Tooltip(
+            message: 'Options véganes',
+            child: Icon(Icons.clear, size: 16, color: Colors.green),
+          ),
+        if (restaurant.delivery)
+          const Tooltip(
+            message: 'Livraison disponible',
+            child: Icon(Icons.delivery_dining, size: 16, color: Colors.red),
+          ),
+        if (restaurant.takeaway)
+          const Tooltip(
+            message: 'À emporter',
+            child: Icon(Icons.takeout_dining, size: 16, color: Colors.orange),
+          ),
+        if (restaurant.smoking)
+          const Tooltip(
+            message: 'Espace fumeur',
+            child: Icon(Icons.smoking_rooms, size: 16, color: Colors.grey),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildRestaurantHeader(Restaurant restaurant) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                restaurant.nom,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            if (restaurant.stars != null) ...[
+              Icon(Icons.star, color: Colors.amber, size: 16),
+              Text(
+                restaurant.stars!.toStringAsFixed(1),
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ],
+        ),
+        SizedBox(height: 8),
+        _buildRestaurantIcons(restaurant),
+        if (restaurant.distance != null)
+          Padding(
+            padding: EdgeInsets.only(top: 4),
+            child: Text(
+              '${restaurant.distance!.toStringAsFixed(1)} km',
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildStatsRow() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _buildStatItem(
+            Icons.star,
+            Colors.orange,
+            "${_averageRating.toStringAsFixed(1)}/5",
+          ),
+          _buildStatItem(
+            Icons.comment,
+            Colors.blue,
+            "${_critiques.length} avis",
+          ),
+          _buildStatItem(
+            Icons.favorite,
+            Colors.red,
+            "$_totalFavorites",
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatItem(IconData icon, Color color, String text) {
+    return Column(
+      children: [
+        Icon(icon, color: color, size: 28),
+        const SizedBox(height: 4),
+        Text(text, style: const TextStyle(fontWeight: FontWeight.bold)),
+      ],
+    );
+  }
+
+  Widget _buildActionButtons(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.edit),
+            label: const Text('Ajouter un avis'),
+            onPressed: () {
+              final idCritique = const Uuid().v4();
+              context.push(
+                "/details/${widget.restaurantId}/avis/add/$idCritique",
+              );
+            },
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.add_a_photo),
+            label: const Text('Ajouter photo'),
+            onPressed: () {
+              context.push("/details/${widget.restaurantId}/photo");
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImageGallerie() {
+    if (_imageUrls.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 16.0),
+        child: Center(child: Text('Aucune image disponible')),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Galerie photos',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 120,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _imageUrls.length,
+              itemBuilder: (context, index) => Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: GestureDetector(
+                  onTap: () => _showFullImage(_imageUrls[index]),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      _imageUrls[index],
+                      width: 160,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        width: 160,
+                        color: Colors.grey[200],
+                        child: const Icon(Icons.broken_image, size: 40),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCritiqueSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Expanded(
+              child: Text(
+                "Avis récents",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                context.push("/details/${widget.restaurantId}/avis");
+              },
+              child: Text(
+                "Voir tous",
+                style: TextStyle(color: Theme.of(context).primaryColor),
+              ),
+            ),
+          ],
+        ),
+        ..._critiques.reversed.take(2).map((critique) => Card(
+              margin: const EdgeInsets.symmetric(vertical: 4.0),
+              child: ListTile(
+                leading: CircleAvatar(child: Text(critique.note.toString())),
+                title: Text(critique.commentaire),
+                subtitle: Row(
+                  children: [
+                    const Icon(Icons.star, color: Colors.orange, size: 16),
+                    Text(" ${critique.note}/5"),
+                  ],
+                ),
+              ),
+            )),
+      ],
     );
   }
 }

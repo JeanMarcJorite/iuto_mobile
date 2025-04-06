@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iuto_mobile/db/supabase_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UserProvider with ChangeNotifier {
   Map<String, dynamic> _user = {};
@@ -15,9 +16,13 @@ class UserProvider with ChangeNotifier {
 
   bool get isLoggedIn => _user.isNotEmpty;
 
-  fetchUser(String userId) async {
-    _user = await SupabaseService.selectUserById(userId);
-    notifyListeners();
+  Future<void> fetchUser() async {
+    final session = Supabase.instance.client.auth.currentSession;
+    if (session != null) {
+      final userId = session.user.id;
+      _user = await SupabaseService.selectUserById(userId);
+      notifyListeners();
+    }
   }
 
   Future<void> logOut(BuildContext context) async {
@@ -29,4 +34,6 @@ class UserProvider with ChangeNotifier {
 
     context.go('/login');
   }
+
+  
 }

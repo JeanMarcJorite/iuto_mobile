@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:iuto_mobile/pages/home_page.dart';
 import 'package:iuto_mobile/pages/favoris_page.dart';
 import 'package:iuto_mobile/pages/account_page.dart';
-import 'package:iuto_mobile/pages/restaurants_page.dart';
 import 'package:iuto_mobile/pages/map_page.dart';
+import 'package:iuto_mobile/providers/favoris_provider.dart';
+import 'package:iuto_mobile/providers/geolocalisation_provider.dart';
+import 'package:provider/provider.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -17,7 +19,6 @@ class _MainPageState extends State<MainPage> {
 
   final List<Widget> _pages = [
     const MyHomePage(),
-    const RestaurantsPage(),
     const MapPage(),
     const FavorisPage(),
     const AccountPage(),
@@ -30,6 +31,18 @@ class _MainPageState extends State<MainPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    final favorisProvider =
+        Provider.of<FavorisProvider>(context, listen: false);
+    favorisProvider.loadAllFavoris();
+
+    final geolocalisationProvider =
+        Provider.of<GeolocalisationProvider>(context, listen: false);
+    geolocalisationProvider.startRealTimeLocation();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[_selectedIndex],
@@ -39,10 +52,6 @@ class _MainPageState extends State<MainPage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Accueil',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: 'Restaurants',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.map),
