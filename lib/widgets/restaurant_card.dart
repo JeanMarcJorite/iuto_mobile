@@ -73,7 +73,7 @@ class RestaurantCard extends StatelessWidget {
       child: AspectRatio(
         aspectRatio: 16 / 9,
         child: Image.asset(
-          'assets/images/lounge.jpg',
+          '../assets/images/lounge.jpg',
           fit: BoxFit.cover,
         ),
       ),
