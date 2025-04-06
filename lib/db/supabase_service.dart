@@ -19,26 +19,46 @@ class SupabaseService {
   }
 
   Future<Map<String, dynamic>> insertUser(MyUserEntity user) async {
+  try {
+    // Hachez le mot de passe
+    user.mdp = hashPassword(user.mdp);
+    print('Mot de passe haché : ${user.mdp}');
+
+    // Préparez les données pour l'insertion
+    final userDocument = user.toDocument();
+    print('Tentative d\'insertion de l\'utilisateur : $userDocument');
+    if (await SupabaseService().userExists(user.email)) {
+  throw Exception('Un utilisateur avec cet email existe déjà.');
+}
+    // Insérez l'utilisateur dans la base de données
+    final response = await supabase
+        .from('UTILISATEURS')
+        .insert(userDocument)
+        .select()
+        .single();
+
+    print('Utilisateur inséré avec succès : $response');
+    return response;
+  } catch (e) {
+    print('Erreur lors de l\'insertion de l\'utilisateur : $e');
+    throw Exception('Failed to insert user: $e');
+  }
+}
+
+Future<bool> userExists(String email) async {
     try {
-      user.mdp = hashPassword(user.mdp);
-
-      final userDocument = user.toDocument();
-      print('Tentative d\'insertion de l\'utilisateur avec mdp: ${user.mdp.isNotEmpty ? 'présent (${user.mdp.length} caractères)' : 'vide'}');
-
-
       final response = await supabase
           .from('UTILISATEURS')
-          .insert(userDocument)
-          .select()
-          .single();
+          .select('id')
+          .eq('email', email)
+          .maybeSingle();
 
-      return response;
+      return response != null;
     } catch (e) {
-      print('Erreur lors de l\'insertion de l\'utilisateur : $e');
-      throw Exception('Failed to insert user: $e');
+      print('Erreur lors de la vérification de l\'existence de l\'utilisateur : $e');
+      return false;
     }
   }
-
   static Future<Map<String, dynamic>> signIn(
       String email, String password) async {
     try {
@@ -54,6 +74,8 @@ class SupabaseService {
       }
 
       final hashedPassword = response['mdp'];
+      print("Mot de passe haché récupéré : $hashedPassword");
+      print("Mot de passe fourni : $password");
       if (_verifyPassword(password, hashedPassword)) {
         print("Connexion réussie pour l'utilisateur : ${response['pseudo']}");
         return {'success': true, 'user': response};
