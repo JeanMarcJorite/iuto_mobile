@@ -10,9 +10,9 @@ class SettingsPage extends StatelessWidget {
     final authService = AuthServices();
     try {
       await authService.logOut();
-      if (context.mounted) {
+      
         context.go('/login');
-      }
+      
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
