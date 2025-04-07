@@ -69,4 +69,5 @@ class GeolocalisationProvider with ChangeNotifier {
 
     return distance;
   }
+  
 }

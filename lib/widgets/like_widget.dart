@@ -118,8 +118,4 @@ class _LikeWidgetState extends State<LikeWidget> {
     );
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
 }

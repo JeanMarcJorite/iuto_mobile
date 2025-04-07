@@ -1,90 +1,122 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iuto_mobile/widgets/index.dart';
 import 'package:provider/provider.dart';
+import 'package:iuto_mobile/providers/favoris_provider.dart';
+import 'package:iuto_mobile/providers/image_provider.dart';
 import 'package:iuto_mobile/providers/user_provider.dart';
 
-class AccountPage extends StatelessWidget {
+class AccountPage extends StatefulWidget {
   const AccountPage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  State<AccountPage> createState() => _AccountPageState();
+}
+
+class _AccountPageState extends State<AccountPage> {
+  late Future<void> _userDataFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _userDataFuture = _initializeAllData();
+  }
+
+  Future<void> _initializeAllData() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
+    await userProvider.fetchUser();
+    final userId = userProvider.user['id'];
+    await Provider.of<FavorisProvider>(context, listen: false)
+        .loadFavorisbyUser(userId);
+    await Provider.of<ImagesProvider>(context, listen: false)
+        .fetchUserImages(userId);
+  }
 
-    return FutureBuilder(
-      future: userProvider.fetchUser(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
+  @override
+  Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
 
-        if (snapshot.hasError) {
-          return Scaffold(
-            body: Center(child: Text('Erreur : ${snapshot.error}')),
-          );
-        }
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Mon Profil'),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => context.push('/settings'),
+            tooltip: 'Paramètres',
+          ),
+        ],
+      ),
+      body: FutureBuilder(
+        future: _userDataFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-        final user = userProvider.user;
+          if (snapshot.hasError) {
+            return ErrorView(
+              error: snapshot.error?.toString(),
+              onRetry: () => setState(() {
+                _userDataFuture = _initializeAllData();
+              }),
+            );
+          }
 
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Profil'),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.settings),
-                onPressed: () {
-                  context.push('/settings');
-                },
+          return CustomScrollView(
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.all(16),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    ProfileHeader(user: userProvider.user),
+                    const SizedBox(height: 24),
+                    UserInfoSection(user: userProvider.user),
+                    const SizedBox(height: 32),
+                    ActionButtonsSection(),
+                  ]),
+                ),
               ),
             ],
-          ),
-          floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.push('/selection');
+          );
         },
-        child: const Icon(Icons.navigate_next),
       ),
-          body: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Nom : ${user['nom']} ${user['prenom']}',
-                  style: const TextStyle(fontSize: 16),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Email : ${user['email']}',
-                  style: const TextStyle(fontSize: 16),
-                ),
-                const SizedBox(height: 8),
-                
-                
-                const SizedBox(height: 20),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    context.push('/user/comments');
-                  },
-                  icon: const Icon(Icons.comment),
-                  label: const Text('Voir tous les commentaires'),
-                ),
-                const SizedBox(height: 10),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    context.push('/user/photos');
-                  },
-                  icon: const Icon(Icons.photo),
-                  label: const Text('Voir toutes les photos'),
-                ),
-              ],
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => context.push('/selection'),
+        icon: const Icon(Icons.explore_outlined),
+        label: const Text('Explorer'),
+      ),
+    );
+  }
+}
 
-            ),
+class ActionButtonsSection extends StatelessWidget {
+  const ActionButtonsSection({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const SizedBox(height: 15),
+        Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: ActionButton(
+            icon: Icons.comment_outlined,
+            label: 'Mes Commentaires',
+            onPressed: () => context.push('/user/comments'),
           ),
-        );
-      },
+        ),
+        const SizedBox(height: 15),
+        Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: ActionButton(
+            icon: Icons.photo_library_outlined,
+            label: 'Mes Photos',
+            onPressed: () => context.push('/user/photosResto'),
+          ),
+        ),
+      ],
     );
   }
 }

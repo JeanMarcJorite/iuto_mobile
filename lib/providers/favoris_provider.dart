@@ -23,6 +23,7 @@ class FavorisProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+  
 
   int getTotalFavorisCount(int restaurantId) {
     return _allFavoris

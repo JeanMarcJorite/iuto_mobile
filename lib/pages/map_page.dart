@@ -73,6 +73,7 @@ class _MapPageState extends State<MapPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Carte des Restaurants'),
+        centerTitle: true,
       ),
       body: Stack(
         children: [
