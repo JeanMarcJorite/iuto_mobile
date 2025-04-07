@@ -12,19 +12,42 @@ class AuthGates extends StatefulWidget {
 }
 
 class _AuthGatesState extends State<AuthGates> {
+  bool _initialized = false;
+  bool _hasError = false;
+  String? _errorMessage;
+
   @override
   void initState() {
     super.initState();
-    _initializeApp();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeApp();
+    });
   }
 
   Future<void> _initializeApp() async {
-    final session = Supabase.instance.client.auth.currentSession;
-    if (session != null) {
-      await Provider.of<UserProvider>(context, listen: false).fetchUser();
-      if (mounted) context.go('/home');
-    } else {
-      if (mounted) context.go('/login');
+    try {
+      final session = Supabase.instance.client.auth.currentSession;
+      if (session != null) {
+        await Provider.of<UserProvider>(context, listen: false).fetchUser();
+        if (mounted) {
+          Future.microtask(() => context.go('/home'));
+        }
+      } else {
+        if (mounted) {
+          Future.microtask(() => context.go('/login'));
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+          _errorMessage = e.toString();
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _initialized = true);
+      }
     }
   }
 
@@ -34,12 +57,16 @@ class _AuthGatesState extends State<AuthGates> {
       body: StreamBuilder<AuthState>(
         stream: Supabase.instance.client.auth.onAuthStateChange,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (snapshot.hasError) {
+            return _buildErrorScreen(snapshot.error.toString());
+          }
+
+          if (!_initialized) {
             return _buildLoadingScreen();
           }
 
-          if (snapshot.hasError) {
-            return _buildErrorScreen(snapshot.error.toString());
+          if (_hasError) {
+            return _buildErrorScreen(_errorMessage ?? 'Erreur inconnue');
           }
 
           final session = snapshot.data?.session;
@@ -48,7 +75,7 @@ class _AuthGatesState extends State<AuthGates> {
             _handleAuthenticatedUser(context);
             return _buildLoadingScreen(message: 'Connexion réussie...');
           } else {
-            if (mounted) context.go('/login');
+            Future.microtask(() => context.go('/login'));
             return _buildLoadingScreen(message: 'Redirection...');
           }
         },
@@ -60,13 +87,15 @@ class _AuthGatesState extends State<AuthGates> {
     try {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       await userProvider.fetchUser();
-      if (mounted) context.go('/home');
+      if (mounted) {
+        Future.microtask(() => context.go('/home'));
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur lors du charement: ${e.toString()}')),
+          SnackBar(content: Text('Erreur lors du chargement: ${e.toString()}')),
         );
-        context.go('/login');
+        Future.microtask(() => context.go('/login'));
       }
     }
   }
