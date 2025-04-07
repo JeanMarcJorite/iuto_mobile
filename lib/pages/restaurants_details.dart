@@ -48,6 +48,9 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
   Future<void> _initializeData() async {
     setState(() => _isLoading = true);
 
+    final favorisProvider =
+        Provider.of<FavorisProvider>(context, listen: false);
+    favorisProvider.addListener(_updateFavoritesCount);
     final restaurantProvider =
         Provider.of<RestaurantProvider>(context, listen: false);
     await restaurantProvider.loadRestaurantById(widget.restaurantId);
@@ -69,14 +72,18 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
       debugPrint('Erreur lors de la récupération des images : $e');
     }
 
-    final favorisProvider =
-        Provider.of<FavorisProvider>(context, listen: false);
-    _totalFavorites = favorisProvider.allFavoris
-        .where((favori) => favori.idRestaurant == widget.restaurantId)
-        .length;
-
     _setupLocationListener();
     setState(() => _isLoading = false);
+  }
+
+  void _updateFavoritesCount() {
+    final favorisProvider =
+        Provider.of<FavorisProvider>(context, listen: false);
+    setState(() {
+      _totalFavorites = favorisProvider.allFavoris
+          .where((favori) => favori.idRestaurant == widget.restaurantId)
+          .length;
+    });
   }
 
   void _setupLocationListener() {
@@ -117,6 +124,9 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
   @override
   void dispose() {
     _positionSubscription.cancel();
+    final favorisProvider =
+        Provider.of<FavorisProvider>(context, listen: false);
+    favorisProvider.removeListener(_updateFavoritesCount);
     super.dispose();
   }
 
