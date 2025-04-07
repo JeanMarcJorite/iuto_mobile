@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class RestaurantProvider with ChangeNotifier {
   List<Restaurant> _allRestaurants = [];
   List<Restaurant> _filteredRestaurants = [];
+  List<Restaurant> _restaurantsPreferences = []; // Restaurants par préférences
   Restaurant? _selectedRestaurant;
   List<String> _restoLike = [];
   Map<String, dynamic> _activeFilters = {};
@@ -16,6 +17,8 @@ class RestaurantProvider with ChangeNotifier {
       _filteredRestaurants.isNotEmpty ? _filteredRestaurants : _allRestaurants;
 
   List<Restaurant> get allRestaurants => _allRestaurants;
+
+  List<Restaurant> get restaurantsPreferences => _restaurantsPreferences;
 
   List<String> get likedRestaurant => _restoLike;
   Restaurant? get selectedRestaurant => _selectedRestaurant;
@@ -50,6 +53,32 @@ class RestaurantProvider with ChangeNotifier {
       _selectedRestaurant = restaurant;
     } catch (e) {
       _error = "Erreur lors de la récupération du restaurant : $e";
+      debugPrint(_error);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadRestaurantsByPreferences(List<int> preferredCuisineIds) async {
+    _isLoading = true;
+
+    try {
+      // Récupérer les propositions correspondant aux préférences
+      final proposes = await SupabaseService.selectProposeByCuisineIds(preferredCuisineIds);
+
+      // Extraire les IDs des restaurants correspondants
+      final restaurantIds = proposes.map((propose) => propose.idRestaurant).toSet();
+
+      // Filtrer les restaurants correspondants
+      _restaurantsPreferences = _allRestaurants
+          .where((restaurant) => restaurantIds.contains(restaurant.id))
+          .toList();
+
+      debugPrint(
+          "${_restaurantsPreferences.length} restaurants trouvés selon les préférences.");
+    } catch (e) {
+      _error = 'Erreur lors de la récupération des restaurants par préférences : $e';
       debugPrint(_error);
     } finally {
       _isLoading = false;

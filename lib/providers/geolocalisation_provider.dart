@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import '../services/geolocalisation_services.dart';
+import 'package:iuto_mobile/services/geolocalisation_services.dart';
 
 class GeolocalisationProvider with ChangeNotifier {
   final GeolocalisationServices _geoService = GeolocalisationServices();

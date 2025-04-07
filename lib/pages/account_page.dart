@@ -18,6 +18,12 @@ class AccountPage extends StatelessWidget {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          context.push('/selection');
+        },
+        child: const Icon(Icons.navigate_next),
+      ),
       body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
