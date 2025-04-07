@@ -185,10 +185,8 @@ class _CuisineSelectionPageState extends State<CuisineSelectionPage> {
         throw 'Connectez-vous pour sauvegarder';
       }
 
-      // Suppression des anciennes préférences
       await db.deleteAllPreferences(user.id);
       
-      // Insertion des nouvelles préférences une par une
       for (final idCuisine in _selectedCuisines) {
         await db.insertPreference(user.id, idCuisine);
       }
