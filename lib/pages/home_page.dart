@@ -188,6 +188,7 @@ class _MyHomePageState extends State<MyHomePage>
           ),
         ));
   }
+  
 
   Widget _buildTopRatedRestaurants(RestaurantProvider provider) {
     final topRestaurants = provider.restaurants

@@ -46,6 +46,7 @@ class RestaurantCard extends StatelessWidget {
                   const SizedBox(height: 8),
 
                   _buildRestaurantAttributs(),
+                  _buildHoraires(),
 
                   if (showDistance)
                     FutureBuilder<Widget>(
@@ -73,7 +74,7 @@ class RestaurantCard extends StatelessWidget {
       child: AspectRatio(
         aspectRatio: 16 / 9,
         child: Image.asset(
-          'assets/images/lounge.jpg',
+          '../assets/images/lounge.jpg',
           fit: BoxFit.cover,
         ),
       ),
@@ -91,6 +92,7 @@ class RestaurantCard extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
     );
   }
+
 
   Widget _buildRestaurantAttributs() {
     return Wrap(
@@ -164,6 +166,21 @@ class RestaurantCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildHoraires() {
+    return Row(
+      children: [
+        const Icon(Icons.access_time, size: 16, color: Colors.grey),
+        const SizedBox(width: 4),
+        Text(
+          restaurant.openingHours != null
+              ? restaurant.openingHours!
+              : 'Horaires non disponibles',
+          style: const TextStyle(color: Colors.grey),
+        ),
+      ],
     );
   }
 }
