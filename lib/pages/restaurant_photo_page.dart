@@ -16,8 +16,6 @@ class RestaurantPhotoPage extends StatefulWidget {
 }
 
 class _RestaurantPhotoPageState extends State<RestaurantPhotoPage> {
-  final ImagePicker _picker = ImagePicker();
-
   void _showSnackBar(String message, {Color backgroundColor = Colors.green}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -177,11 +175,8 @@ class _RestaurantPhotoPageState extends State<RestaurantPhotoPage> {
 
   void _editPhoto(int index) async {
     final imagesProvider = Provider.of<ImagesProvider>(context, listen: false);
-    final XFile? newImage =
-        await _picker.pickImage(source: ImageSource.gallery);
-
-    if (newImage != null) {
-      imagesProvider.localImages[index] = File(newImage.path);
+    if (imagesProvider.localImages.isNotEmpty) {
+      imagesProvider.updateImage(index, ImageSource.gallery);
       _showSnackBar('Photo modifiée avec succès!',
           backgroundColor: Colors.green[400]!);
     } else {

@@ -15,8 +15,7 @@ class ImagesProvider extends ChangeNotifier {
   List<String> get imageUrls => _imageUrls;
 
   bool _isLoading = false;
-  bool get isLoading => _isLoading; 
-
+  bool get isLoading => _isLoading;
 
   Future<void> fetchImagesByRestaurantId(String restaurantId) async {
     _isLoading = true;
@@ -62,6 +61,32 @@ class ImagesProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> addMultipleImages(ImageSource source) async {
+    try {
+      final List<XFile>? pickedImages = await _picker.pickMultiImage();
+      if (pickedImages != null) {
+        for (var image in pickedImages) {
+          _localImages.add(File(image.path));
+        }
+        notifyListeners();
+      }
+    } catch (e) {
+      print('Erreur lors de la sélection des images : $e');
+    }
+  }
+
+  Future<void> updateImage(int index, ImageSource source) async {
+    try {
+      final XFile? pickedImage = await _picker.pickImage(source: source);
+      if (pickedImage != null && index >= 0 && index < _localImages.length) {
+        _localImages[index] = File(pickedImage.path);
+        notifyListeners();
+      }
+    } catch (e) {
+      print('Erreur lors de la mise à jour de l\'image : $e');
+    }
+  }
+
   void removeImage(int index) {
     if (index >= 0 && index < _localImages.length) {
       _localImages.removeAt(index);
@@ -91,4 +116,3 @@ class ImagesProvider extends ChangeNotifier {
     notifyListeners();
   }
 }
-

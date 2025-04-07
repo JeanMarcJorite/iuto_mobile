@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:iuto_mobile/db/iutoDB.dart';
 import 'package:iuto_mobile/db/supabase_service.dart';
 import 'package:iuto_mobile/pages/add_avis_page.dart';
 import 'package:iuto_mobile/pages/advanced_settings.dart';
 import 'package:iuto_mobile/pages/avis_detail_page.dart';
+import 'package:iuto_mobile/pages/cuisine_selection_page.dart';
 import 'package:iuto_mobile/pages/edit_account_page.dart';
 import 'package:iuto_mobile/pages/main_page.dart';
 import 'package:iuto_mobile/pages/recherche_page.dart';
@@ -21,25 +23,40 @@ import 'package:go_router/go_router.dart';
 import 'package:iuto_mobile/pages/login_page.dart';
 import 'package:iuto_mobile/pages/sign_up_page.dart';
 import 'package:iuto_mobile/services/auth_gates.dart';
-import 'package:iuto_mobile/pages/restaurants_page.dart';
+import 'package:sqflite/sqflite.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SupabaseService.init();
 
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => RestaurantProvider()),
-        ChangeNotifierProvider(create: (_) => CritiqueProvider()),
-        ChangeNotifierProvider(create: (_) => UserProvider()),
-        ChangeNotifierProvider(create: (_) => FavorisProvider()),
-        ChangeNotifierProvider(create: (_) => ImagesProvider()),
-        ChangeNotifierProvider(create: (_) => GeolocalisationProvider()),
-      ],
-      child: const MyApp(),
-    ),
-  );
+  try {
+    debugPrint('Initialisation de Supabase...');
+    await SupabaseService.init();
+    debugPrint('Supabase initialisé avec succès.');
+
+    debugPrint('Initialisation de la base de données locale...');
+    final IutoDB db = IutoDB();
+    debugPrint('Base de données locale initialisée avec succès.');
+
+    debugPrint('Lancement de l\'application...');
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => RestaurantProvider()),
+          ChangeNotifierProvider(create: (_) => CritiqueProvider()),
+          ChangeNotifierProvider(create: (_) => UserProvider()),
+          ChangeNotifierProvider(create: (_) => FavorisProvider()),
+          ChangeNotifierProvider(create: (_) => ImagesProvider()),
+          ChangeNotifierProvider(create: (_) => GeolocalisationProvider()),
+          ChangeNotifierProvider(create: (_) => db),
+        ],
+        child: const MyApp(),
+      ),
+    );
+    debugPrint('Application lancée avec succès.');
+  } catch (e, stackTrace) {
+    debugPrint('Erreur lors de l\'initialisation : $e');
+    debugPrint('Stack trace : $stackTrace');
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -84,6 +101,12 @@ final _allRoutes = GoRouter(routes: [
       builder: (context, state) {
         return MainPage();
       }),
+  GoRoute(
+    path: '/selection',
+    builder: (context, state) {
+      return const CuisineSelectionPage();
+    },
+  ),
   GoRoute(
       path: "/recherche",
       builder: (context, state) =>

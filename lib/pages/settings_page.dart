@@ -115,9 +115,9 @@ class SettingsPage extends StatelessWidget {
             child: const Text('Annuler'),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _logout(context);
+            onPressed: () async {
+              context.pop();
+              await _logout(context);
             },
             child: Text(
               'Confirmer',

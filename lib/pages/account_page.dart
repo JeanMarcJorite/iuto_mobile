@@ -39,6 +39,12 @@ class AccountPage extends StatelessWidget {
               ),
             ],
           ),
+          floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          context.push('/selection');
+        },
+        child: const Icon(Icons.navigate_next),
+      ),
           body: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -74,6 +80,7 @@ class AccountPage extends StatelessWidget {
                   label: const Text('Voir toutes les photos'),
                 ),
               ],
+
             ),
           ),
         );
