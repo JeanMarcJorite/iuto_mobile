@@ -4,6 +4,7 @@ import 'package:iuto_mobile/components/my_button.dart';
 import 'package:iuto_mobile/components/my_textfield.dart';
 import 'package:iuto_mobile/db/auth_services.dart';
 import 'package:iuto_mobile/db/data/Users/src/models/user_repo.dart';
+import 'package:iuto_mobile/db/supabase_service.dart';
 
 
 class SignUpPage extends StatelessWidget {
@@ -21,70 +22,86 @@ class SignUpPage extends StatelessWidget {
   SignUpPage({super.key, required this.onTap});
 
   void register(BuildContext context) async {
-    final authService = AuthServices();
-    if (_passwordController.text.trim() ==
-        _confirmPasswordController.text.trim()) {
-      try {
-        MyUser myUser = MyUser.empty;
-        myUser.email = _emailController.text.trim();
-        myUser.pseudo = _pseudoController.text.trim();
-        myUser.mdp = _passwordController.text.trim();
-        myUser.nom = _nomController.text.trim();
-        myUser.prenom = _prenomController.text.trim();
+  final authService = AuthServices();
+  final supabaseService = SupabaseService();
 
-        if (myUser.email == '') {
-          showSnackBar(context, 'L\'email est requis');
-          return;
-        }
-        if (myUser.mdp == '') {
-          showSnackBar(context, 'Le mot de passe est requis');
-          return;
-        }
-        if (myUser.pseudo == '') {
-          showSnackBar(context, 'Le pseudo est requis');
-          return;
-        }
-        if (myUser.nom == '') {
-          showSnackBar(context, 'Le nom est requis');
-          return;
-        }
-        if (myUser.prenom == '') {
-          showSnackBar(context, 'Le prénom est requis');
-          return;
-        }
-        
-        await authService.signUp(myUser, _passwordController.text.trim());
-        await authService.setUserData(myUser);
-        showDialog(
-            context: context,
-            builder: ((context) => AlertDialog(
-            title: const Text("Succès"),
-            content: const Text("Compte créé avec succès. Veuillez vérifier votre email."),
-            actions: [
-              TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-            context.go('/login');
-          },
-          child: const Text("OK"),
-              )
-            ],
-          )));
-      } catch (e) {
-        showDialog(
-            context: context,
-            builder: ((context) => AlertDialog(
-                  title: Text(e.toString()),
-                )));
-      }
-    } else {
-      showDialog(
-          context: context,
-          builder: ((context) => const AlertDialog(
-                title: Text("Password don't match"),
-              )));
+  if (_passwordController.text.trim() == _confirmPasswordController.text.trim()) {
+    try {
+      MyUser myUser = MyUser.empty;
+      myUser.email = _emailController.text.trim();
+      myUser.pseudo = _pseudoController.text.trim();
+      myUser.mdp = _passwordController.text.trim();
+      myUser.nom = _nomController.text.trim();
+      myUser.prenom = _prenomController.text.trim();
+
+      if (myUser.email == '') {
+      showSnackBar(context, 'L\'email est requis');
+      return;
     }
+    if (myUser.mdp == '') {
+      showSnackBar(context, 'Le mot de passe est requis');
+      return;
+    }
+    if (myUser.pseudo == '') {
+      showSnackBar(context, 'Le pseudo est requis');
+      return;
+    }
+    if (myUser.nom == '') {
+      showSnackBar(context, 'Le nom est requis');
+      return;
+    }
+    if (myUser.prenom == '') {
+      showSnackBar(context, 'Le prénom est requis');
+      return;
+    }
+
+      // Vérifiez si l'utilisateur existe déjà
+      if (await supabaseService.userExists(myUser.email)) {
+        showSnackBar(context, 'Un utilisateur avec cet email existe déjà');
+        return;
+      }
+
+      await supabaseService.insertUser(myUser.toEntity());
+
+      await authService.signUp(myUser, _passwordController.text.trim());
+
+
+
+      // Affichage du succès
+      showDialog(
+        context: context,
+        builder: ((context) => AlertDialog(
+              title: const Text("Succès"),
+              content: const Text("Compte créé avec succès. Veuillez vérifier votre email."),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    context.go('/login');
+                  },
+                  child: const Text("OK"),
+                )
+              ],
+            )),
+      );
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: ((context) => AlertDialog(
+              title: const Text("Erreur"),
+              content: Text("Une erreur s'est produite : ${e.toString()}"),
+            )),
+      );
+    }
+  } else {
+    showDialog(
+      context: context,
+      builder: ((context) => const AlertDialog(
+            title: Text("Les mots de passe ne correspondent pas"),
+          )),
+    );
   }
+}
 
   void showSnackBar(BuildContext context, String message) {
     final snackBar = SnackBar(content: Text(message));

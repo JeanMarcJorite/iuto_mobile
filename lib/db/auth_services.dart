@@ -1,6 +1,7 @@
 import 'package:iuto_mobile/db/data/Users/src/entities/entities.dart';
 import 'package:iuto_mobile/db/data/Users/src/models/user_repo.dart';
 import 'package:iuto_mobile/db/data/Users/src/user_repository.dart';
+import 'package:iuto_mobile/db/supabase_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthServices implements UserRepository {
@@ -56,7 +57,7 @@ class AuthServices implements UserRepository {
   Future<MyUser> signUp(MyUser myUser, String password) async {
     try {
       final response =
-          await _supabase.auth.signUp(email: myUser.email, password: password);
+          await _supabase.auth.signUp(email: myUser.email, password:password);
       if (response.user == null) {
         throw Exception('Failed to sign up: User is null');
       }

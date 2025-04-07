@@ -160,6 +160,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     Provider.of<RestaurantProvider>(context, listen: false)
                         .setFilters(filters);
                   },
+                  initialFilters: Provider.of<RestaurantProvider>(context,
+                          listen: false)
+                      .activeFilters,
                 ),
               );
             },
@@ -177,7 +180,33 @@ class _MyHomePageState extends State<MyHomePage> {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (restaurantProvider.restaurants.isEmpty) {
+        bool hasActiveFilters = restaurantProvider.activeFilters.entries
+            .where((entry) => entry.key != 'searchQuery')
+            .any((entry) => entry.value == true);
+
+        if (hasActiveFilters && restaurantProvider.restaurants.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.no_meals, size: 64, color: Colors.grey),
+                const SizedBox(height: 16),
+                const Text(
+                  'Aucun restaurant ne correspond à ces filtres',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () => restaurantProvider.clearFilters(),
+                  child: const Text('Réinitialiser les filtres'),
+                ),
+              ],
+            ),
+          );
+        }
+
+        if (restaurantProvider.allRestaurants.isEmpty) {
           return const Center(child: Text('Aucun restaurant disponible.'));
         }
 
