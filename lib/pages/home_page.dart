@@ -273,24 +273,6 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _buildWelcomeSection() {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Bienvenue sur la page d\'accueil',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 8),
-        Text(
-          'Bienvenue sur notre plateforme de comparateur de restaurants en ligne. '
-          'Vous pouvez comparer les restaurants de la région Orléanaise.',
-          style: TextStyle(fontSize: 16),
-        ),
-      ],
-    );
-  }
-
   Widget _buildSearchBar() {
     return TextField(
         controller: _searchController,

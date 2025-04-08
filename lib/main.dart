@@ -19,7 +19,7 @@ import 'package:iuto_mobile/providers/favoris_provider.dart';
 import 'package:iuto_mobile/providers/geolocalisation_provider.dart';
 import 'package:iuto_mobile/providers/image_provider.dart';
 import 'package:iuto_mobile/providers/user_provider.dart';
-import 'package:iuto_mobile/widgets/images_widget.dart';
+import 'package:iuto_mobile/services/notification_service.dart';
 import 'package:provider/provider.dart';
 import 'package:iuto_mobile/providers/restaurant_provider.dart';
 import 'package:go_router/go_router.dart';
@@ -38,6 +38,10 @@ Future<void> main() async {
     debugPrint('Initialisation de la base de données locale...');
     final IutoDB db = IutoDB();
     debugPrint('Base de données locale initialisée avec succès.');
+
+    debugPrint('Initialisation de la géolocalisation...');
+    NotificationService().initNotification();
+    debugPrint('Service de notification initialisé avec succès.');
 
     debugPrint('Lancement de l\'application...');
     runApp(
