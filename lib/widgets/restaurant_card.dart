@@ -73,8 +73,10 @@ class RestaurantCard extends StatelessWidget {
       borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
       child: AspectRatio(
         aspectRatio: 16 / 9,
+
         child: CachedNetworkImage(
           imageUrl: restaurant.photo!,
+
           fit: BoxFit.cover,
           placeholder: (context, url) => Container(
             color: Colors.grey[200],
