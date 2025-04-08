@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iuto_mobile/db/data/Restaurants/restaurant.dart';
+import 'package:iuto_mobile/db/iutoDB.dart';
+import 'package:iuto_mobile/db/supabase_service.dart';
 import 'package:iuto_mobile/providers/favoris_provider.dart';
 import 'package:iuto_mobile/widgets/filters_widgets.dart';
 import 'package:provider/provider.dart';
@@ -18,13 +20,9 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage>
-    with AutomaticKeepAliveClientMixin {
+class _MyHomePageState extends State<MyHomePage> {
   StreamSubscription<Position>? _positionSubscription;
   final TextEditingController _searchController = TextEditingController();
-
-  @override
-  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -35,6 +33,8 @@ class _MyHomePageState extends State<MyHomePage>
   Future<void> _initializeData() async {
     await Provider.of<RestaurantProvider>(context, listen: false)
         .loadRestaurants();
+    await _loadRestaurantsByPreferences();
+
     _setupLocationUpdates();
   }
 
@@ -55,6 +55,28 @@ class _MyHomePageState extends State<MyHomePage>
         _updateRestaurantDistances(geoProvider, restaurantProvider);
       }
     });
+  }
+
+  Future<void> _loadRestaurantsByPreferences() async {
+    final db = Provider.of<IutoDB>(context, listen: false);
+    final restaurantProvider =
+        Provider.of<RestaurantProvider>(context, listen: false);
+
+    try {
+      final user = SupabaseService.supabase.auth.currentUser;
+      if (user == null) {
+        throw Exception('Utilisateur non connecté.');
+      }
+
+      final preferences = await db.getPreferences(user.id);
+      final preferredCuisineIds = preferences.map((p) => p.idCuisine).toList();
+
+      await restaurantProvider
+          .loadRestaurantsByPreferences(preferredCuisineIds);
+    } catch (e) {
+      debugPrint(
+          'Erreur lors du chargement des restaurants par préférences : $e');
+    }
   }
 
   Future<void> _updateRestaurantDistances(
@@ -87,6 +109,35 @@ class _MyHomePageState extends State<MyHomePage>
     }
   }
 
+  Widget _buildRestaurantsByPreferences(RestaurantProvider provider) {
+    final preferredRestaurants = provider.restaurantsPreferences;
+
+    if (preferredRestaurants.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Restaurants selon vos préférences',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: preferredRestaurants.length,
+          itemBuilder: (context, index) {
+            return RestaurantCard(
+              restaurant: preferredRestaurants[index],
+            );
+          },
+        ),
+      ],
+    );
+  }
+
   @override
   void dispose() {
     _positionSubscription?.cancel();
@@ -95,8 +146,6 @@ class _MyHomePageState extends State<MyHomePage>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('IUTables\'O'),
@@ -168,7 +217,9 @@ class _MyHomePageState extends State<MyHomePage>
             children: [
               _buildSearchBar(),
               const SizedBox(height: 32),
-              _buildTopRatedRestaurants(restaurantProvider),
+              _buildRestaurantsByPreferences(restaurantProvider),
+              const SizedBox(height: 32),
+              _buildRestaurantsEtoile(restaurantProvider),
               const SizedBox(height: 32),
               _buildNearestRestaurants(restaurantProvider),
               const SizedBox(height: 32),
@@ -218,7 +269,7 @@ class _MyHomePageState extends State<MyHomePage>
         ));
   }
 
-  Widget _buildTopRatedRestaurants(RestaurantProvider provider) {
+  Widget _buildRestaurantsEtoile(RestaurantProvider provider) {
     final topRestaurants = provider.restaurants
         .where((r) => r.stars != null && r.stars! > 1)
         .toList();
@@ -261,7 +312,7 @@ class _MyHomePageState extends State<MyHomePage>
       if (b.distance == null) return -1;
       return a.distance!.compareTo(b.distance!);
     });
-    final dixMeilleursRestaurants = plusProcheResto.take(10).toList();
+    final dixPlusProcheRestaurants = plusProcheResto.take(10).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -274,7 +325,7 @@ class _MyHomePageState extends State<MyHomePage>
         ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: dixMeilleursRestaurants.length,
+          itemCount: dixPlusProcheRestaurants.length,
           itemBuilder: (context, index) {
             return RestaurantCard(
               restaurant: plusProcheResto[index],

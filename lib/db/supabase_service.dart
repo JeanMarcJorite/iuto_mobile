@@ -2,7 +2,9 @@ import 'package:bcrypt/bcrypt.dart';
 import 'package:flutter/material.dart';
 import 'package:iuto_mobile/db/data/Critiques/critique.dart';
 import 'package:iuto_mobile/db/data/Favoris/favoris.dart';
+import 'package:iuto_mobile/db/data/Propose/propose.dart';
 import 'package:iuto_mobile/db/data/Restaurants/restaurant.dart';
+import 'package:iuto_mobile/db/data/Type_cuisine/type_cuisine.dart';
 import 'package:iuto_mobile/db/data/Users/src/entities/entities.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -18,26 +20,47 @@ class SupabaseService {
   }
 
   Future<Map<String, dynamic>> insertUser(MyUserEntity user) async {
+  try {
+    // Hachez le mot de passe
+    user.mdp = hashPassword(user.mdp);
+    print('Mot de passe haché : ${user.mdp}');
+
+    // Préparez les données pour l'insertion
+    final userDocument = user.toDocument();
+    print('Tentative d\'insertion de l\'utilisateur : $userDocument');
+    if (await SupabaseService().userExists(user.email)) {
+  throw Exception('Un utilisateur avec cet email existe déjà.');
+}
+    // Insérez l'utilisateur dans la base de données
+    final response = await supabase
+        .from('UTILISATEURS')
+        .insert(userDocument)
+        .select()
+        .single();
+
+    print('Utilisateur inséré avec succès : $response');
+    return response;
+  } catch (e) {
+    print('Erreur lors de l\'insertion de l\'utilisateur : $e');
+    throw Exception('Failed to insert user: $e');
+  }
+}
+
+
+Future<bool> userExists(String email) async {
     try {
-      user.mdp = hashPassword(user.mdp);
-
-      final userDocument = user.toDocument();
-      print('Tentative d\'insertion de l\'utilisateur avec mdp: ${user.mdp.isNotEmpty ? 'présent (${user.mdp.length} caractères)' : 'vide'}');
-
-
       final response = await supabase
           .from('UTILISATEURS')
-          .insert(userDocument)
-          .select()
-          .single();
+          .select('id')
+          .eq('email', email)
+          .maybeSingle();
 
-      return response;
+      return response != null;
     } catch (e) {
-      print('Erreur lors de l\'insertion de l\'utilisateur : $e');
-      throw Exception('Failed to insert user: $e');
+      print('Erreur lors de la vérification de l\'existence de l\'utilisateur : $e');
+      return false;
     }
   }
-
   static Future<Map<String, dynamic>> signIn(
       String email, String password) async {
     try {
@@ -53,6 +76,8 @@ class SupabaseService {
       }
 
       final hashedPassword = response['mdp'];
+      print("Mot de passe haché récupéré : $hashedPassword");
+      print("Mot de passe fourni : $password");
       if (_verifyPassword(password, hashedPassword)) {
         print("Connexion réussie pour l'utilisateur : ${response['pseudo']}");
         return {'success': true, 'user': response};
@@ -74,14 +99,24 @@ class SupabaseService {
     return BCrypt.hashpw(password, BCrypt.gensalt());
   }
 
-  static Future<Map<String, dynamic>> selectUserById(String id) async {
+ static Future<Map<String, dynamic>> selectUserById(String id) async {
+  try {
     final response = await supabase
         .from('UTILISATEURS')
         .select()
         .eq('id', id)
-        .then((value) => value[0]);
+        .maybeSingle(); // Utilisez maybeSingle pour éviter les erreurs si aucun résultat n'est trouvé
+
+    if (response == null) {
+      throw Exception('Aucun utilisateur trouvé avec cet ID.');
+    }
+
     return response;
+  } catch (e) {
+    debugPrint('Erreur lors de la récupération de l\'utilisateur : $e');
+    return {}; // Retournez une map vide en cas d'erreur
   }
+}
 
   static Future<List<Restaurant>> selectRestaurants() async {
     final response = await supabase.from('Restaurants').select();
@@ -91,7 +126,8 @@ class SupabaseService {
     }
 
     return (response as List<dynamic>)
-        .map((restaurant) => Restaurant.fromMap(restaurant as Map<String, dynamic>))
+        .map((restaurant) =>
+            Restaurant.fromMap(restaurant as Map<String, dynamic>))
         .toList();
   }
 
@@ -122,7 +158,6 @@ class SupabaseService {
       final response =
           await supabase.from('Critiquer').select().eq('idR', restaurantId);
 
-
       final critiques =
           response.map((critique) => Critique.fromMap(critique)).toList();
       return critiques;
@@ -148,7 +183,6 @@ class SupabaseService {
     try {
       final response = await supabase.from('favoris').select();
 
-
       final favoris =
           response.map((favori) => Favoris.fromMap(favori)).toList();
       return favoris;
@@ -162,7 +196,6 @@ class SupabaseService {
     try {
       final response =
           await supabase.from('favoris').select().eq('id_utilisateur', userId);
-
 
       final favoris =
           response.map((favori) => Favoris.fromMap(favori)).toList();
@@ -191,7 +224,6 @@ class SupabaseService {
           .maybeSingle();
 
       if (response == null) {
-        // Aucun favori trouvé, retourner 0
         return 0;
       }
 
@@ -199,7 +231,52 @@ class SupabaseService {
     } catch (e) {
       debugPrint(
           'Erreur lors de la récupération du dernier ID de favoris : $e');
-      return 0; // Retourne 0 en cas d'erreur
+      return 0;
+    }
+  }
+
+  static Future<List<Propose>> selectProposeByCuisineIds(
+      List<int> idCuisines) async {
+    try {
+      final List<Propose> proposes = [];
+
+      for (int idCuisine in idCuisines) {
+        final response =
+            await supabase.from('Propose').select().eq('idCuisine', idCuisine);
+
+        if (response.isNotEmpty) {
+          proposes.addAll(
+              response.map((propose) => Propose.fromMap(propose)).toList());
+        }
+      }
+
+      if (proposes.isEmpty) {
+        throw Exception('Aucune donnée trouvée pour les propositions.');
+      }
+
+      return proposes;
+    } catch (e) {
+      debugPrint('Erreur lors de la récupération des propositions : $e');
+      return [];
+    }
+  }
+
+  static Future<List<TypeCuisine>> selectTypeCuisine() async {
+    try {
+      final response = await supabase.from('Type_Cuisine').select();
+
+      final typeCuisines = response
+          .map((typeCuisine) => TypeCuisine.fromMap(typeCuisine))
+          .toList();
+
+      debugPrint('Types de cuisine récupérés : $typeCuisines');
+      if (typeCuisines.isEmpty) {
+        throw Exception('Aucun type de cuisine trouvé.');
+      }
+      return typeCuisines;
+    } catch (e) {
+      debugPrint('Erreur lors de la récupération des types de cuisine : $e');
+      return [];
     }
   }
 }

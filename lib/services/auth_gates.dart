@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iuto_mobile/db/iutoDB.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:iuto_mobile/providers/user_provider.dart';
@@ -33,7 +34,8 @@ class AuthGates extends StatelessWidget {
               final userProvider =
                   Provider.of<UserProvider>(context, listen: false);
               await userProvider.fetchUser();
-              context.go('/home');
+
+              context.go("/home");
             });
           } else {
             Future.microtask(() => context.go('/login'));

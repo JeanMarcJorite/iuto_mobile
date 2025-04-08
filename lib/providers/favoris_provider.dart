@@ -53,6 +53,7 @@ class FavorisProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('Erreur lors de l\'ajout d\'un favori : $e');
     }
+    
   }
 
   Future<void> removeFavoris(int favoriId) async {
