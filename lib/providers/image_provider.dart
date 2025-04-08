@@ -8,7 +8,6 @@ class ImagesProvider extends ChangeNotifier {
   final StorageServices _storageServices = StorageServices();
   final ImagePicker _picker = ImagePicker();
 
-  // Séparation claire des états
   List<String> _restaurantImages = [];
   List<String> _userImages = [];
   List<File> _localImages = [];

@@ -1,20 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:iuto_mobile/providers/image_provider.dart';
-import 'package:iuto_mobile/providers/restaurant_provider.dart';
-import 'package:iuto_mobile/providers/user_provider.dart';
 import 'package:iuto_mobile/widgets/index.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import 'package:iuto_mobile/providers/image_provider.dart';
-import 'package:iuto_mobile/providers/restaurant_provider.dart';
-import 'package:iuto_mobile/providers/user_provider.dart';
-import 'package:iuto_mobile/widgets/index.dart';
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:provider/provider.dart';
-import 'package:iuto_mobile/providers/image_provider.dart';
 
 class AccountPhotoRestoPage extends StatefulWidget {
   const AccountPhotoRestoPage({super.key});
@@ -33,7 +21,7 @@ class _AccountPhotoRestoPageState extends State<AccountPhotoRestoPage> {
   Future<void> _confirmDelete(BuildContext context, String imageUrl) async {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
-    final confirmed = await showDialog<bool>(
+    await showDialog<bool>(
         context: context,
         builder: (context) {
           return AlertDialog(
@@ -42,36 +30,21 @@ class _AccountPhotoRestoPageState extends State<AccountPhotoRestoPage> {
                 const Text('Êtes-vous sûr de vouloir supprimer cette image ?'),
             actions: [
               TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
+                onPressed: () => context.pop(false),
                 child: const Text('Annuler'),
               ),
               TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
+                onPressed: () => context.pop(true),
                 child: const Text('Supprimer',
                     style: TextStyle(color: Colors.red)),
               ),
             ],
           );
         });
-    if (confirmed == true && mounted) {
-      try {
-        final imagesProvider =
-            Provider.of<ImagesProvider>(context, listen: false);
-        await imagesProvider.deleteImage(imageUrl);
 
-        if (mounted) {
-          scaffoldMessenger.showSnackBar(
-            const SnackBar(content: Text('Image supprimée avec succès')),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          scaffoldMessenger.showSnackBar(
-            SnackBar(content: Text('Erreur: ${e.toString()}')),
-          );
-        }
-      }
-    }
+    scaffoldMessenger.showSnackBar(
+      const SnackBar(content: Text('Fonctionnalité à venir')),
+    );
   }
 
   @override

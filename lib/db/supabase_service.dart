@@ -188,7 +188,7 @@ class SupabaseService {
 
   static Future<void> deleteCritique(String critiqueId) async {
     debugPrint('Suppression de la critique avec l\'ID : $critiqueId');
-    
+
     await supabase.from('Critiquer').delete().eq('id', critiqueId);
   }
 
