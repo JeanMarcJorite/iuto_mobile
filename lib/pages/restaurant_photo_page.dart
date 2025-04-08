@@ -169,7 +169,7 @@ class _RestaurantPhotoPageState extends State<RestaurantPhotoPage> {
 
   void _deletePhoto(int index) {
     final imagesProvider = Provider.of<ImagesProvider>(context, listen: false);
-    imagesProvider.removeImage(index);
+    imagesProvider.removeImageLocal(index);
     _showSnackBar('Photo supprimée avec succès!');
   }
 

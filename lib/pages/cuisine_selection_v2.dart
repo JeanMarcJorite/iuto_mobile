@@ -29,7 +29,7 @@ class _CuisineSelectionPageState extends State<CuisineSelectionPage> {
         _fetchCuisines(),
         _loadPreferences(),
       ]);
-
+      
       if (mounted) {
         setState(() {
           _cuisines = results[0] as List<Map<String, dynamic>>;
@@ -58,7 +58,7 @@ class _CuisineSelectionPageState extends State<CuisineSelectionPage> {
     try {
       final db = Provider.of<IutoDB>(context, listen: false);
       final user = SupabaseService.supabase.auth.currentUser;
-
+      
       if (user != null) {
         final preferences = await db.getPreferences(user.id);
         _selectedCuisines.addAll(preferences.map((p) => p.idCuisine));
@@ -93,14 +93,6 @@ class _CuisineSelectionPageState extends State<CuisineSelectionPage> {
         ],
       ),
       body: _buildContent(),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16),
-        child: FilledButton.icon(
-          icon: const Icon(Icons.save),
-          label: const Text('Enregistrer les préférences'),
-          onPressed: _isSaving ? null : () => _savePreferences(context),
-        ),
-      ),
     );
   }
 
@@ -128,8 +120,7 @@ class _CuisineSelectionPageState extends State<CuisineSelectionPage> {
               ),
               TextButton(
                 onPressed: () => _toggleAllSelection(!allSelected),
-                child: Text(
-                    allSelected ? 'Tout désélectionner' : 'Tout sélectionner'),
+                child: Text(allSelected ? 'Tout désélectionner' : 'Tout sélectionner'),
               ),
             ],
           ),
@@ -142,6 +133,15 @@ class _CuisineSelectionPageState extends State<CuisineSelectionPage> {
             itemBuilder: (_, index) => _buildCuisineItem(_cuisines[index]),
           ),
         ),
+        if (_selectedCuisines.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: FilledButton.icon(
+              icon: const Icon(Icons.save),
+              label: const Text('Enregistrer les préférences'),
+              onPressed: _isSaving ? null : () => _savePreferences(context),
+            ),
+          ),
       ],
     );
   }
@@ -156,9 +156,9 @@ class _CuisineSelectionPageState extends State<CuisineSelectionPage> {
       onChanged: (bool? value) {
         if (value != null) {
           setState(() {
-            value
-                ? _selectedCuisines.add(cuisine['id'])
-                : _selectedCuisines.remove(cuisine['id']);
+            value 
+              ? _selectedCuisines.add(cuisine['id'])
+              : _selectedCuisines.remove(cuisine['id']);
           });
         }
       },
@@ -186,7 +186,7 @@ class _CuisineSelectionPageState extends State<CuisineSelectionPage> {
       }
 
       await db.deleteAllPreferences(user.id);
-
+      
       for (final idCuisine in _selectedCuisines) {
         await db.insertPreference(user.id, idCuisine);
       }

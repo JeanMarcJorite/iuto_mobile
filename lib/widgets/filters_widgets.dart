@@ -24,7 +24,6 @@ class _FiltersWidgetState extends State<FiltersWidget> {
     super.initState();
     _filters = Map.from(widget.initialFilters);
     
-    // S'assurer que tous les filtres booléens existent
     _filters.putIfAbsent('internetAccess', () => false);
     _filters.putIfAbsent('wheelchair', () => false);
     _filters.putIfAbsent('isVegetarian', () => false);

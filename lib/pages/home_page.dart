@@ -7,11 +7,12 @@ import 'package:iuto_mobile/db/data/Restaurants/restaurant.dart';
 import 'package:iuto_mobile/db/iutoDB.dart';
 import 'package:iuto_mobile/db/supabase_service.dart';
 import 'package:iuto_mobile/providers/favoris_provider.dart';
-import 'package:iuto_mobile/widgets/filters_widgets.dart';
+import 'package:iuto_mobile/widgets/index.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import 'package:iuto_mobile/providers/restaurant_provider.dart';
 import 'package:iuto_mobile/providers/geolocalisation_provider.dart';
-import 'package:iuto_mobile/widgets/restaurant_card.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -23,6 +24,9 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   StreamSubscription<Position>? _positionSubscription;
   final TextEditingController _searchController = TextEditingController();
+  LatLng? _currentPosition;
+  bool _isLoadingLocation = true;
+  bool _locationEnabled = true;
 
   @override
   void initState() {
@@ -34,8 +38,44 @@ class _MyHomePageState extends State<MyHomePage> {
     await Provider.of<RestaurantProvider>(context, listen: false)
         .loadRestaurants();
     await _loadRestaurantsByPreferences();
+    _checkLocationSettings();
 
     _setupLocationUpdates();
+  }
+
+  Future<void> _checkLocationSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _locationEnabled = prefs.getBool('localisation') ?? true;
+    });
+
+    if (_locationEnabled) {
+      await _getCurrentLocation();
+    } else {
+      setState(() => _isLoadingLocation = false);
+    }
+  }
+
+  Future<void> _getCurrentLocation() async {
+    try {
+      final geoProvider =
+          Provider.of<GeolocalisationProvider>(context, listen: false);
+      await geoProvider.loadCurrentPosition();
+
+      if (geoProvider.currentPosition != null && mounted) {
+        setState(() {
+          _currentPosition = LatLng(
+            geoProvider.currentPosition!.latitude,
+            geoProvider.currentPosition!.longitude,
+          );
+          _isLoadingLocation = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingLocation = false);
+      }
+    }
   }
 
   void _setupLocationUpdates() {
@@ -149,6 +189,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('IUTables\'O'),
+        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_alt),
@@ -160,9 +201,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     Provider.of<RestaurantProvider>(context, listen: false)
                         .setFilters(filters);
                   },
-                  initialFilters: Provider.of<RestaurantProvider>(context,
-                          listen: false)
-                      .activeFilters,
+                  initialFilters:
+                      Provider.of<RestaurantProvider>(context, listen: false)
+                          .activeFilters,
                 ),
               );
             },
@@ -221,7 +262,8 @@ class _MyHomePageState extends State<MyHomePage> {
               const SizedBox(height: 32),
               _buildRestaurantsEtoile(restaurantProvider),
               const SizedBox(height: 32),
-              _buildNearestRestaurants(restaurantProvider),
+              if (_locationEnabled && _currentPosition != null)
+                _buildNearestRestaurants(restaurantProvider),
               const SizedBox(height: 32),
               _buildPluslikeRestaurant(),
             ],

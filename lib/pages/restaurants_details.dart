@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
@@ -10,7 +11,7 @@ import 'package:iuto_mobile/providers/geolocalisation_provider.dart';
 import 'package:iuto_mobile/providers/image_provider.dart';
 import 'package:iuto_mobile/providers/restaurant_provider.dart';
 import 'package:iuto_mobile/providers/critique_provider.dart';
-import 'package:iuto_mobile/widgets/like_widget.dart';
+import 'package:iuto_mobile/widgets/index.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -66,8 +67,8 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
       final imagesProvider =
           Provider.of<ImagesProvider>(context, listen: false);
       await imagesProvider
-          .fetchImagesByRestaurantId(widget.restaurantId.toString());
-      _imageUrls = imagesProvider.imageUrls;
+          .fetchRestaurantImages(widget.restaurantId.toString());
+      _imageUrls = imagesProvider.restaurantImages;
     } catch (e) {
       debugPrint('Erreur lors de la récupération des images : $e');
     }
@@ -142,10 +143,13 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                 maxWidth: MediaQuery.of(context).size.width * 0.9,
                 maxHeight: MediaQuery.of(context).size.height * 0.7,
               ),
-              child: Image.network(
-                imageUrl,
+              child: CachedNetworkImage(
+                imageUrl: imageUrl,
                 fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) => const Icon(
+                placeholder: (context, url) => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+                errorWidget: (context, url, error) => const Icon(
                   Icons.broken_image,
                   size: 50,
                   color: Colors.grey,
@@ -153,7 +157,7 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
               ),
             ),
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => context.pop(),
               child: const Text('Fermer'),
             ),
           ],
@@ -180,9 +184,18 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
             SliverAppBar(
               expandedHeight: 300,
               flexibleSpace: FlexibleSpaceBar(
-                background: Image.asset(
-                  'assets/images/restaurant_defaut_2.jpg',
+                background: CachedNetworkImage(
+                  imageUrl: _restaurant?.photo ??
+                      'assets/images/restaurant_defaut_2.jpg',
                   fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    color: Colors.grey[200],
+                    child: const Center(child: CircularProgressIndicator()),
+                  ),
+                  errorWidget: (context, url, error) => Image.asset(
+                    'assets/images/restaurant_defaut_2.jpg',
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
               pinned: true,
@@ -405,11 +418,16 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                   onTap: () => _showFullImage(_imageUrls[index]),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      _imageUrls[index],
+                    child: CachedNetworkImage(
+                      imageUrl: _imageUrls[index],
                       width: 160,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
+                      placeholder: (context, url) => Container(
+                        width: 160,
+                        color: Colors.grey[200],
+                        child: const Center(child: CircularProgressIndicator()),
+                      ),
+                      errorWidget: (context, url, error) => Container(
                         width: 160,
                         color: Colors.grey[200],
                         child: const Icon(Icons.broken_image, size: 40),

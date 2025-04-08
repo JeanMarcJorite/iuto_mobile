@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iuto_mobile/db/data/Restaurants/restaurant.dart';
@@ -72,9 +73,19 @@ class RestaurantCard extends StatelessWidget {
       borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
       child: AspectRatio(
         aspectRatio: 16 / 9,
-        child: Image.asset(
-          '../assets/images/lounge.jpg',
+
+        child: CachedNetworkImage(
+          imageUrl: restaurant.photo!,
+
           fit: BoxFit.cover,
+          placeholder: (context, url) => Container(
+            color: Colors.grey[200],
+            child: const Center(child: CircularProgressIndicator()),
+          ),
+          errorWidget: (context, url, error) => Image.asset(
+            'assets/images/lounge.jpg',
+            fit: BoxFit.cover,
+          ),
         ),
       ),
     );

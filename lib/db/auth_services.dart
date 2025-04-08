@@ -1,7 +1,6 @@
 import 'package:iuto_mobile/db/data/Users/src/entities/entities.dart';
 import 'package:iuto_mobile/db/data/Users/src/models/user_repo.dart';
 import 'package:iuto_mobile/db/data/Users/src/user_repository.dart';
-import 'package:iuto_mobile/db/supabase_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthServices implements UserRepository {

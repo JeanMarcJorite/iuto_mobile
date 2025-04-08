@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iuto_mobile/db/iutoDB.dart';
 import 'package:iuto_mobile/db/supabase_service.dart';
+import 'package:iuto_mobile/pages/account_photo_resto_page.dart';
 import 'package:iuto_mobile/pages/add_avis_page.dart';
 import 'package:iuto_mobile/pages/advanced_settings.dart';
 import 'package:iuto_mobile/pages/avis_detail_page.dart';
@@ -17,13 +18,13 @@ import 'package:iuto_mobile/providers/favoris_provider.dart';
 import 'package:iuto_mobile/providers/geolocalisation_provider.dart';
 import 'package:iuto_mobile/providers/image_provider.dart';
 import 'package:iuto_mobile/providers/user_provider.dart';
+import 'package:iuto_mobile/widgets/images_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:iuto_mobile/providers/restaurant_provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iuto_mobile/pages/login_page.dart';
 import 'package:iuto_mobile/pages/sign_up_page.dart';
 import 'package:iuto_mobile/services/auth_gates.dart';
-import 'package:sqflite/sqflite.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -175,4 +176,10 @@ final _allRoutes = GoRouter(routes: [
           builder: (context, state) => const AdvancedSettingsPage(),
         )
       ]),
+  GoRoute(
+    path: '/user/photosResto',
+    builder: (context, state) {
+      return const AccountPhotoRestoPage();
+    },
+  ),
 ]);
