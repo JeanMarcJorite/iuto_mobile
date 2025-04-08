@@ -101,7 +101,7 @@ class ActionButtonsSection extends StatelessWidget {
         const SizedBox(height: 15),
         Padding(
           padding: const EdgeInsets.all(12.0),
-          child: ActionButton(
+          child: ActionButtonAccount(
             icon: Icons.comment_outlined,
             label: 'Mes Commentaires',
             onPressed: () => context.push('/user/comments'),
@@ -110,7 +110,7 @@ class ActionButtonsSection extends StatelessWidget {
         const SizedBox(height: 15),
         Padding(
           padding: const EdgeInsets.all(12.0),
-          child: ActionButton(
+          child: ActionButtonAccount(
             icon: Icons.photo_library_outlined,
             label: 'Mes Photos',
             onPressed: () => context.push('/user/photosResto'),
