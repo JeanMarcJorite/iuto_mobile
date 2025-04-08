@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iuto_mobile/db/data/Restaurants/restaurant.dart';
+import 'package:iuto_mobile/db/models/restaurant.dart';
 
 class RestaurantHeader extends StatelessWidget {
   final Restaurant restaurant;

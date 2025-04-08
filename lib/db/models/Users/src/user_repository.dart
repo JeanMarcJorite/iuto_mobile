@@ -1,6 +1,6 @@
 
 
-import 'package:iuto_mobile/db/data/Users/src/models/user_repo.dart';
+import 'package:iuto_mobile/db/models/Users/src/models/user_repo.dart';
 
 abstract class UserRepository {
   Stream<MyUser?> get user;

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iuto_mobile/db/data/Restaurants/restaurant.dart';
+import 'package:iuto_mobile/db/models/restaurant.dart';
 import 'package:iuto_mobile/db/iutoDB.dart';
 import 'package:iuto_mobile/db/supabase_service.dart';
 import 'package:iuto_mobile/providers/favoris_provider.dart';

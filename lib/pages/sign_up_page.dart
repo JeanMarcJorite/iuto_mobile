@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iuto_mobile/components/my_button.dart';
 import 'package:iuto_mobile/components/my_textfield.dart';
-import 'package:iuto_mobile/db/auth_services.dart';
-import 'package:iuto_mobile/db/data/Users/src/models/user_repo.dart';
+import 'package:iuto_mobile/services/auth_services.dart';
+import 'package:iuto_mobile/db/models/Users/src/models/user_repo.dart';
 import 'package:iuto_mobile/db/supabase_service.dart';
 
 

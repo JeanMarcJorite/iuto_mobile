@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iuto_mobile/db/data/Restaurants/restaurant.dart';
+import 'package:iuto_mobile/db/models/restaurant.dart';
 import 'package:iuto_mobile/widgets/like_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -48,7 +48,7 @@ class RestaurantCard extends StatelessWidget {
 
                   _buildRestaurantAttributs(),
                   const SizedBox(height: 8),
-  
+
                   _buildRestaurantHoraires(),
                   if (showDistance)
                     FutureBuilder<Widget>(

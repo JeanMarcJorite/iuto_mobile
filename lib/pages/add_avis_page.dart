@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iuto_mobile/db/auth_services.dart';
+import 'package:iuto_mobile/services/auth_services.dart';
 import 'package:provider/provider.dart';
 import 'package:iuto_mobile/providers/critique_provider.dart';
-import 'package:iuto_mobile/db/data/Critiques/critique.dart';
+import 'package:iuto_mobile/db/models/critique.dart';
 
 class AddAvisPage extends StatefulWidget {
   final int restaurantId;
