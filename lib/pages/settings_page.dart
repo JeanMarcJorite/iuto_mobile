@@ -9,10 +9,9 @@ class SettingsPage extends StatelessWidget {
   Future<void> _logout(BuildContext context) async {
     final authService = AuthServices();
     try {
+      context.go('/login');
+
       await authService.logOut();
-      
-        context.go('/login');
-      
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
