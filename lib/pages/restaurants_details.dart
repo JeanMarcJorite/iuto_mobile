@@ -389,6 +389,8 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
     );
   }
 
+ 
+
   Widget _buildImageGallerie() {
     if (_imageUrls.isEmpty) {
       return const Padding(

@@ -47,7 +47,9 @@ class RestaurantCard extends StatelessWidget {
                   const SizedBox(height: 8),
 
                   _buildRestaurantAttributs(),
-
+                  const SizedBox(height: 8),
+  
+                  _buildRestaurantHoraires(),
                   if (showDistance)
                     FutureBuilder<Widget>(
                       future: _buildDistanceInfo(),
@@ -73,10 +75,8 @@ class RestaurantCard extends StatelessWidget {
       borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
       child: AspectRatio(
         aspectRatio: 16 / 9,
-
         child: CachedNetworkImage(
           imageUrl: restaurant.photo!,
-
           fit: BoxFit.cover,
           placeholder: (context, url) => Container(
             color: Colors.grey[200],
@@ -128,6 +128,24 @@ class RestaurantCard extends StatelessWidget {
         if (restaurant.takeaway)
           _buildAttributeIcon(Icons.takeout_dining, 'À emporter'),
       ],
+    );
+  }
+
+  Widget _buildRestaurantHoraires() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Row(
+        children: [
+          const Icon(Icons.schedule, size: 16, color: Colors.grey),
+          const SizedBox(width: 4),
+          Text(
+            restaurant.openingHours != null
+                ? '${restaurant.openingHours!} '
+                : 'Horaires non disponible',
+            style: const TextStyle(color: Colors.grey),
+          ),
+        ],
+      ),
     );
   }
 

@@ -27,6 +27,22 @@ class CritiqueProvider with ChangeNotifier {
     }
   }
 
+  Future<void> loadCritiquesByUserId(String userId) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _critiques = await SupabaseService.selectCritiquesByUserId(userId);
+    } catch (e) {
+      debugPrint('Erreur lors du chargement des critiques : $e');
+      _error = 'Erreur lors du chargement des critiques';
+      _critiques = [];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> addCritique(Critique critique) async {
     try {
       await SupabaseService.insertCritique(critique.toMap());
@@ -48,7 +64,9 @@ class CritiqueProvider with ChangeNotifier {
     if (_critiques.isEmpty) {
       return 0.0;
     }
-    double totalNote = _critiques.map((critique) => critique.note.toDouble()).reduce((a, b) => a + b);
+    double totalNote = _critiques
+        .map((critique) => critique.note.toDouble())
+        .reduce((a, b) => a + b);
     return totalNote / _critiques.length;
   }
 }

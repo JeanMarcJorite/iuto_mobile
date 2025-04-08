@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iuto_mobile/db/iutoDB.dart';
 import 'package:iuto_mobile/db/supabase_service.dart';
+import 'package:iuto_mobile/pages/account_comment_resto_page.dart';
 import 'package:iuto_mobile/pages/account_photo_resto_page.dart';
 import 'package:iuto_mobile/pages/add_avis_page.dart';
 import 'package:iuto_mobile/pages/advanced_settings.dart';
@@ -180,6 +181,12 @@ final _allRoutes = GoRouter(routes: [
     path: '/user/photosResto',
     builder: (context, state) {
       return const AccountPhotoRestoPage();
+    },
+  ),
+  GoRoute(
+    path: '/user/comments',
+    builder: (context, state) {
+      return const AccountCommentRestoPage();
     },
   ),
 ]);

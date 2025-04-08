@@ -37,7 +37,7 @@ class ProfileHeader extends StatelessWidget {
               const SizedBox(height: 8),
               if (user['date_creation'] != null)
                 Text(
-                  'Membre depuis ${user['date_creation']}',
+                  'Membre depuis ${DateTime.parse(user['date_creation']).toLocal().toString().split(' ')[0]}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Colors.grey[500],
                       ),
