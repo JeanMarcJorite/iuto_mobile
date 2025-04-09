@@ -84,6 +84,7 @@ class RestaurantCard extends StatelessWidget {
   Widget _buildErrorWidget() {
     return Image.asset(
       'assets/images/lounge.jpg',
+      
       fit: BoxFit.cover,
     );
   }
