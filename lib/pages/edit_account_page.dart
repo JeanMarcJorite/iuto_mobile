@@ -11,7 +11,8 @@ class EditAccountPage extends StatefulWidget {
 class _EditAccountPageState extends State<EditAccountPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _confirmNewPasswordController = TextEditingController();
+  final TextEditingController _confirmNewPasswordController =
+      TextEditingController();
   String _username = '';
   String _email = '';
   String _currentPassword = '';
@@ -73,7 +74,8 @@ class _EditAccountPageState extends State<EditAccountPage> {
               ),
               TextFormField(
                 controller: _confirmNewPasswordController,
-                decoration: const InputDecoration(labelText: 'Confirm New Password'),
+                decoration:
+                    const InputDecoration(labelText: 'Confirm New Password'),
                 obscureText: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -112,7 +114,8 @@ class _EditAccountPageState extends State<EditAccountPage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Please enter your current password to confirm changes.'),
+            const Text(
+                'Please enter your current password to confirm changes.'),
             const SizedBox(height: 10),
             TextField(
               controller: passwordController,
@@ -162,7 +165,8 @@ class _EditAccountPageState extends State<EditAccountPage> {
       } else {
         // Si le mot de passe est incorrect
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Incorrect password. Please try again.')),
+          const SnackBar(
+              content: Text('Incorrect password. Please try again.')),
         );
       }
     } catch (e) {
@@ -179,7 +183,8 @@ class _EditAccountPageState extends State<EditAccountPage> {
         'pseudo': _username,
         'email': _email,
         if (_newPasswordController.text.isNotEmpty)
-          'mdp': SupabaseService.hashPassword(_newPasswordController.text) , // En dur pour correspondre à la base actuelle
+          'mdp': SupabaseService.hashPassword(_newPasswordController
+              .text), // En dur pour correspondre à la base actuelle
       };
 
       print("Mise à jour des données utilisateur : $updates");

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iuto_mobile/db/data/Critiques/critique.dart';
+import 'package:iuto_mobile/db/models/critique.dart';
 
 class ReviewsSection extends StatelessWidget {
   final int restaurantId;

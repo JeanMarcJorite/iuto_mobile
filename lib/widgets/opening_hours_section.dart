@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iuto_mobile/models/day_schedule.dart';
+import 'package:iuto_mobile/db/models/day_schedule.dart';
 
 class OpeningHoursSection extends StatelessWidget {
   final String? openingHours;

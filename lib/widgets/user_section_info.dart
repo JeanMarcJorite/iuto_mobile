@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iuto_mobile/providers/critique_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:iuto_mobile/providers/favoris_provider.dart';
 import 'package:iuto_mobile/providers/image_provider.dart';
@@ -13,6 +14,7 @@ class UserInfoSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final imagesProvider = Provider.of<ImagesProvider>(context);
     final favorisProvider = Provider.of<FavorisProvider>(context);
+    final critiqueProvider = Provider.of<CritiqueProvider>(context);
 
     return Card(
       elevation: 1,
@@ -33,15 +35,15 @@ class UserInfoSection extends StatelessWidget {
               value: favorisProvider.favoris.length.toString(),
               label: 'Favoris',
             ),
-            Container(
-              height: 40,
-              width: 1,
-              color: Colors.grey.shade300,
-            ),
             StatSection(
               icon: Icons.photo_library_outlined,
               value: imagesProvider.userImages.length.toString(),
               label: 'Photos',
+            ),
+            StatSection(
+              icon: Icons.comment_outlined,
+              value: critiqueProvider.critiques.length.toString(),
+              label: 'Commentaires',
             ),
           ],
         ),

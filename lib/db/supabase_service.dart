@@ -1,11 +1,11 @@
 import 'package:bcrypt/bcrypt.dart';
 import 'package:flutter/material.dart';
-import 'package:iuto_mobile/db/data/Critiques/critique.dart';
-import 'package:iuto_mobile/db/data/Favoris/favoris.dart';
-import 'package:iuto_mobile/db/data/Propose/propose.dart';
-import 'package:iuto_mobile/db/data/Restaurants/restaurant.dart';
-import 'package:iuto_mobile/db/data/Type_cuisine/type_cuisine.dart';
-import 'package:iuto_mobile/db/data/Users/src/entities/entities.dart';
+import 'package:iuto_mobile/db/models/critique.dart';
+import 'package:iuto_mobile/db/models/favoris.dart';
+import 'package:iuto_mobile/db/models/propose.dart';
+import 'package:iuto_mobile/db/models/restaurant.dart';
+import 'package:iuto_mobile/db/models/type_cuisine.dart';
+import 'package:iuto_mobile/db/models/Users/src/entities/entities.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseService {
@@ -27,6 +27,7 @@ class SupabaseService {
 
       // Préparez les données pour l'insertion
       final userDocument = user.toDocument();
+      debugPrint('Données utilisateur : $userDocument');
       print('Tentative d\'insertion de l\'utilisateur : $userDocument');
       if (await SupabaseService().userExists(user.email)) {
         throw Exception('Un utilisateur avec cet email existe déjà.');

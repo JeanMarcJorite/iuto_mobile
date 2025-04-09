@@ -1,6 +1,8 @@
-import 'package:iuto_mobile/db/data/Users/src/entities/entities.dart';
-import 'package:iuto_mobile/db/data/Users/src/models/user_repo.dart';
-import 'package:iuto_mobile/db/data/Users/src/user_repository.dart';
+import 'package:bcrypt/bcrypt.dart';
+import 'package:iuto_mobile/db/models/Users/src/entities/entities.dart';
+import 'package:iuto_mobile/db/models/Users/src/models/user_repo.dart';
+import 'package:iuto_mobile/db/models/Users/src/user_repository.dart';
+import 'package:iuto_mobile/db/supabase_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthServices implements UserRepository {
@@ -56,18 +58,27 @@ class AuthServices implements UserRepository {
   Future<MyUser> signUp(MyUser myUser, String password) async {
     try {
       final response =
-          await _supabase.auth.signUp(email: myUser.email, password:password);
+          await _supabase.auth.signUp(email: myUser.email, password: password);
       if (response.user == null) {
         throw Exception('Failed to sign up: User is null');
       }
       myUser.id = response.user!.id;
+      
 
-      await setUserData(myUser);
+      await  SupabaseService().insertUser(myUser.toEntity());
       return myUser;
     } on AuthException catch (e) {
       throw Exception('Failed to sign up: ${e.message}');
     } catch (e) {
       throw Exception('Failed to sign up: ${e.toString()}');
     }
+  }
+
+  static bool verifyPassword(String password, String hashedPassword) {
+    return BCrypt.checkpw(password, hashedPassword);
+  }
+
+  static String hashPassword(String password) {
+    return BCrypt.hashpw(password, BCrypt.gensalt());
   }
 }

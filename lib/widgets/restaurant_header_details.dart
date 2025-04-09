@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:iuto_mobile/db/data/Restaurants/restaurant.dart';
+import 'package:iuto_mobile/db/models/restaurant.dart';
 
-class RestaurantHeader extends StatelessWidget {
+class RestaurantHeaderDetail extends StatelessWidget {
   final Restaurant restaurant;
 
-  const RestaurantHeader({super.key, required this.restaurant});
+  const RestaurantHeaderDetail({super.key, required this.restaurant});
 
   @override
   Widget build(BuildContext context) {

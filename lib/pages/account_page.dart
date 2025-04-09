@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iuto_mobile/providers/critique_provider.dart';
 import 'package:iuto_mobile/widgets/index.dart';
 import 'package:provider/provider.dart';
 import 'package:iuto_mobile/providers/favoris_provider.dart';
@@ -30,6 +31,8 @@ class _AccountPageState extends State<AccountPage> {
         .loadFavorisbyUser(userId);
     await Provider.of<ImagesProvider>(context, listen: false)
         .fetchUserImages(userId);
+    await Provider.of<CritiqueProvider>(context, listen: false)
+        .loadCritiquesByUserId(userId);
   }
 
   @override

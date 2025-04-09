@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iuto_mobile/db/data/Critiques/critique.dart';
+import 'package:iuto_mobile/db/models/critique.dart';
 import 'package:iuto_mobile/db/supabase_service.dart';
 import 'package:iuto_mobile/providers/user_provider.dart';
 import 'package:provider/provider.dart';

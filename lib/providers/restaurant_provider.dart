@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iuto_mobile/db/data/Restaurants/restaurant.dart';
+import 'package:iuto_mobile/db/models/restaurant.dart';
 import 'package:iuto_mobile/db/supabase_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

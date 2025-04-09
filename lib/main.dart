@@ -12,6 +12,7 @@ import 'package:iuto_mobile/pages/main_page.dart';
 import 'package:iuto_mobile/pages/recherche_page.dart';
 import 'package:iuto_mobile/pages/restaurant_photo_page.dart';
 import 'package:iuto_mobile/pages/restaurants_details.dart';
+import 'package:iuto_mobile/pages/resto_liste_page.dart';
 import 'package:iuto_mobile/pages/settings_page.dart';
 import 'package:iuto_mobile/pages/map_page.dart';
 import 'package:iuto_mobile/providers/critique_provider.dart';
@@ -19,7 +20,7 @@ import 'package:iuto_mobile/providers/favoris_provider.dart';
 import 'package:iuto_mobile/providers/geolocalisation_provider.dart';
 import 'package:iuto_mobile/providers/image_provider.dart';
 import 'package:iuto_mobile/providers/user_provider.dart';
-import 'package:iuto_mobile/widgets/images_widget.dart';
+import 'package:iuto_mobile/services/notification_service.dart';
 import 'package:provider/provider.dart';
 import 'package:iuto_mobile/providers/restaurant_provider.dart';
 import 'package:go_router/go_router.dart';
@@ -38,6 +39,10 @@ Future<void> main() async {
     debugPrint('Initialisation de la base de données locale...');
     final IutoDB db = IutoDB();
     debugPrint('Base de données locale initialisée avec succès.');
+
+    debugPrint('Initialisation de la géolocalisation...');
+    NotificationService().initNotification();
+    debugPrint('Service de notification initialisé avec succès.');
 
     debugPrint('Lancement de l\'application...');
     runApp(
@@ -187,6 +192,16 @@ final _allRoutes = GoRouter(routes: [
     path: '/user/comments',
     builder: (context, state) {
       return const AccountCommentRestoPage();
+    },
+  ),
+  GoRoute(
+    path: '/restaurant-list',
+    builder: (context, state) {
+      final args = state.extra as Map<String, dynamic>;
+      return RestaurantListPage(
+        title: args['title'],
+        restaurants: args['restaurants'],
+      );
     },
   ),
 ]);

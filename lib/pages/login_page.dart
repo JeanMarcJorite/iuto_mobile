@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iuto_mobile/components/my_button.dart';
 import 'package:iuto_mobile/components/my_textfield.dart';
-import 'package:iuto_mobile/db/auth_services.dart';
+import 'package:iuto_mobile/services/auth_services.dart';
 
 
 class LoginPage extends StatelessWidget {

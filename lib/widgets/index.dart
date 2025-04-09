@@ -12,6 +12,6 @@ export 'package:iuto_mobile/widgets/images_widget.dart';
 export 'package:iuto_mobile/widgets/empty_state.dart';
 export 'package:iuto_mobile/widgets/image_gallery.dart';
 export 'package:iuto_mobile/widgets/opening_hours_section.dart';
-export 'package:iuto_mobile/widgets/restaurant_header.dart';
+export 'package:iuto_mobile/widgets/restaurant_header_details.dart';
 export 'package:iuto_mobile/widgets/reviews_section.dart';
 export 'package:iuto_mobile/widgets/stats_row.dart';
