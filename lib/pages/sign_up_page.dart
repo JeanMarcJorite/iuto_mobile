@@ -6,6 +6,7 @@ import 'package:iuto_mobile/services/auth_services.dart';
 import 'package:iuto_mobile/db/models/Users/src/models/user_repo.dart';
 import 'package:iuto_mobile/db/supabase_service.dart';
 import 'package:iuto_mobile/services/notification_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -67,17 +68,27 @@ class _SignUpPageState extends State<SignUpPage> {
         email: _emailController.text.trim(),
         nom: _nomController.text.trim(),
         prenom: _prenomController.text.trim(),
-        mdp: _passwordController.text.trim(), 
-        idRole: 2, 
+        mdp: _passwordController.text.trim(),
+        idRole: 2,
         date_creation: DateTime.now(),
       );
 
-      await  SupabaseService().insertUser(myUser.toEntity());
+      await SupabaseService().insertUser(myUser.toEntity());
 
-      NotificationService().showNotification(
-        title: "Compte créé",
-        body: "Votre compte a été créé avec succès.",
-      );
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      bool notificationsEnabled =
+          prefs.getBool('notifications_enabled') ?? false;
+
+      if (notificationsEnabled) {
+        NotificationService().showNotification(
+          title: "Bienvenue",
+          body: "Votre compte a été créé avec succès.",
+        );
+        NotificationService().showNotification(
+          title: "Attention",
+          body: "Vérifiez votre email pour confirmer votre compte.",
+        );
+      }
 
       if (mounted) {
         context.go('/login');
@@ -136,7 +147,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      "Create Account",
+                      "Créer un compte",
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -152,7 +163,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                     const SizedBox(height: 15),
                     MyTextField(
-                      hintText: "Password",
+                      hintText: "Mot de passe",
                       icon: const Icon(Icons.lock_outline),
                       controller: _passwordController,
                       obscureText: true,
@@ -160,7 +171,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                     const SizedBox(height: 15),
                     MyTextField(
-                      hintText: "Confirm Password",
+                      hintText: "Confirmer le mot de passe",
                       icon: const Icon(Icons.lock_outline),
                       controller: _confirmPasswordController,
                       obscureText: true,
@@ -189,7 +200,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                     const SizedBox(height: 15),
                     MyButton(
-                      text: "Sign up",
+                      text: "Créer un compte",
                       onPressed: _isLoading ? null : () => _register(context),
                       elevation: 5.0,
                       fontSize: 15,
@@ -199,11 +210,11 @@ class _SignUpPageState extends State<SignUpPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text("Already Have an Account? "),
+                        const Text("Vous avez déjà un compte ?"),
                         InkWell(
                           onTap: widget.onTap,
                           child: Text(
-                            "Log in",
+                            "Se connecter",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Colors.blue.shade400,
