@@ -1,125 +1,207 @@
 import 'package:flutter/material.dart';
+import 'package:iuto_mobile/db/iutoDB.dart';
+import 'package:iuto_mobile/db/supabase_service.dart';
+import 'package:iuto_mobile/pages/account_comment_resto_page.dart';
+import 'package:iuto_mobile/pages/account_photo_resto_page.dart';
+import 'package:iuto_mobile/pages/add_avis_page.dart';
+import 'package:iuto_mobile/pages/advanced_settings.dart';
+import 'package:iuto_mobile/pages/avis_detail_page.dart';
+import 'package:iuto_mobile/pages/cuisine_selection_page.dart';
+import 'package:iuto_mobile/pages/edit_account_page.dart';
+import 'package:iuto_mobile/pages/main_page.dart';
+import 'package:iuto_mobile/pages/recherche_page.dart';
+import 'package:iuto_mobile/pages/restaurant_photo_page.dart';
+import 'package:iuto_mobile/pages/restaurants_details.dart';
+import 'package:iuto_mobile/pages/resto_liste_page.dart';
+import 'package:iuto_mobile/pages/settings_page.dart';
+import 'package:iuto_mobile/pages/map_page.dart';
+import 'package:iuto_mobile/providers/critique_provider.dart';
+import 'package:iuto_mobile/providers/favoris_provider.dart';
+import 'package:iuto_mobile/providers/geolocalisation_provider.dart';
+import 'package:iuto_mobile/providers/image_provider.dart';
+import 'package:iuto_mobile/providers/user_provider.dart';
+import 'package:iuto_mobile/services/notification_service.dart';
+import 'package:provider/provider.dart';
+import 'package:iuto_mobile/providers/restaurant_provider.dart';
+import 'package:go_router/go_router.dart';
+import 'package:iuto_mobile/pages/login_page.dart';
+import 'package:iuto_mobile/pages/sign_up_page.dart';
+import 'package:iuto_mobile/services/auth_gates.dart';
 
-void main() {
-  runApp(const MyApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    debugPrint('Initialisation de Supabase...');
+    await SupabaseService.init();
+    debugPrint('Supabase initialisé avec succès.');
+
+    debugPrint('Initialisation de la base de données locale...');
+    final IutoDB db = IutoDB();
+    debugPrint('Base de données locale initialisée avec succès.');
+
+    debugPrint('Initialisation de la géolocalisation...');
+    NotificationService().initNotification();
+    debugPrint('Service de notification initialisé avec succès.');
+
+    debugPrint('Lancement de l\'application...');
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => RestaurantProvider()),
+          ChangeNotifierProvider(create: (_) => CritiqueProvider()),
+          ChangeNotifierProvider(create: (_) => UserProvider()),
+          ChangeNotifierProvider(create: (_) => FavorisProvider()),
+          ChangeNotifierProvider(create: (_) => ImagesProvider()),
+          ChangeNotifierProvider(create: (_) => GeolocalisationProvider()),
+          ChangeNotifierProvider(create: (_) => db),
+        ],
+        child: const MyApp(),
+      ),
+    );
+    debugPrint('Application lancée avec succès.');
+  } catch (e, stackTrace) {
+    debugPrint('Erreur lors de l\'initialisation : $e');
+    debugPrint('Stack trace : $stackTrace');
+  }
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
+    return MaterialApp.router(
+      routerConfig: _allRoutes,
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+        colorScheme: ColorScheme.light(
+          surface: Colors.grey.shade100,
+          onSurface: Colors.black,
+          primary: Colors.blue,
+          onPrimary: Colors.white,
+          secondary: const Color(0xFFD9D9D9),
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: Colors.white,
+          selectedItemColor: Colors.blue,
+          unselectedItemColor: Colors.grey,
+        ),
+        pageTransitionsTheme: PageTransitionsTheme(
+          builders: {
+            TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+            TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
+
+final _allRoutes = GoRouter(routes: [
+  GoRoute(
+    path: '/',
+    builder: (context, state) => const AuthGates(),
+  ),
+  GoRoute(
+      path: '/home',
+      builder: (context, state) {
+        return MainPage();
+      }),
+  GoRoute(
+    path: '/selection',
+    builder: (context, state) {
+      return const CuisineSelectionPage();
+    },
+  ),
+  GoRoute(
+      path: "/recherche",
+      builder: (context, state) =>
+          RecherchePage(search: state.uri.queryParameters['search'] ?? '')),
+  GoRoute(
+    path: '/login',
+    builder: (context, state) => LoginPage(onTap: () => context.go('/signup')),
+  ),
+  GoRoute(
+    path: '/signup',
+    builder: (context, state) => SignUpPage(onTap: () => context.go('/login')),
+  ),
+  GoRoute(
+    path: '/map',
+    builder: (context, state) => const MapPage(),
+  ),
+  GoRoute(
+      path: '/details/:id',
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        final previousPage =
+            state.extra != null && state.extra is Map<String, String>
+                ? (state.extra as Map<String, String>)['previousPage']
+                : null;
+        return RestaurantDetailsPage(
+          key: ValueKey('details-${DateTime.now().millisecondsSinceEpoch}'),
+          restaurantId: int.parse(id),
+          previousPage: previousPage,
+        );
+      },
+      routes: [
+        GoRoute(
+          path: 'photo',
+          builder: (context, state) {
+            final id = state.pathParameters['id']!;
+            return RestaurantPhotoPage(
+              restaurantId: int.parse(id),
+            );
+          },
+        ),
+        GoRoute(
+            path: 'avis',
+            builder: (context, state) {
+              final id = state.pathParameters['id']!;
+              return AllReviewsPage(restaurantId: int.parse(id));
+            }),
+        GoRoute(
+            path: 'avis/add/:critiqueId',
+            builder: (context, state) {
+              final restaurantId = int.parse(state.pathParameters['id']!);
+              final critiqueId = state.pathParameters['critiqueId']!;
+              return AddAvisPage(
+                  restaurantId: restaurantId, idCritique: critiqueId);
+            }),
+      ]),
+  GoRoute(
+      path: '/settings',
+      builder: (context, state) => const SettingsPage(),
+      routes: [
+        GoRoute(
+          path: 'profile/edit',
+          builder: (context, state) => const EditAccountPage(),
+        ),
+        GoRoute(
+          path: 'profile/advanced',
+          builder: (context, state) => const AdvancedSettingsPage(),
+        )
+      ]),
+  GoRoute(
+    path: '/user/photosResto',
+    builder: (context, state) {
+      return const AccountPhotoRestoPage();
+    },
+  ),
+  GoRoute(
+    path: '/user/comments',
+    builder: (context, state) {
+      return const AccountCommentRestoPage();
+    },
+  ),
+  GoRoute(
+    path: '/restaurant-list',
+    builder: (context, state) {
+      final args = state.extra as Map<String, dynamic>;
+      return RestaurantListPage(
+        title: args['title'],
+        restaurants: args['restaurants'],
+      );
+    },
+  ),
+]);
