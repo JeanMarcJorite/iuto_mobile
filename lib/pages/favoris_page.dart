@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:iuto_mobile/providers/favoris_provider.dart';
 import 'package:iuto_mobile/providers/restaurant_provider.dart';
-import 'package:iuto_mobile/widgets/restaurant_card.dart';
+import 'package:iuto_mobile/widgets/index.dart';
 
 class FavorisPage extends StatefulWidget {
   const FavorisPage({Key? key}) : super(key: key);
@@ -26,6 +26,7 @@ class _FavorisPageState extends State<FavorisPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Favoris'),
+        centerTitle: true,
       ),
       body: likedRestaurants.isEmpty
           ? const Center(

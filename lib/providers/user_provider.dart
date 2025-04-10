@@ -26,11 +26,11 @@ class UserProvider with ChangeNotifier {
         _user = fetchedUser;
       } else {
         debugPrint('Aucun utilisateur trouvé pour l\'ID : $userId');
-        _user = {}; // Si aucun utilisateur n'est trouvé
+        _user = {}; 
       }
     } catch (e) {
       debugPrint('Erreur lors de la récupération des données utilisateur : $e');
-      _user = {}; // En cas d'erreur, définissez une map vide
+      _user = {}; 
     }
     notifyListeners();
   }

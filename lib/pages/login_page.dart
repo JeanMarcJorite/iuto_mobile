@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iuto_mobile/components/my_button.dart';
 import 'package:iuto_mobile/components/my_textfield.dart';
-import 'package:iuto_mobile/db/auth_services.dart';
-
+import 'package:iuto_mobile/services/auth_services.dart';
+import 'package:iuto_mobile/services/notification_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
@@ -12,32 +13,77 @@ class LoginPage extends StatelessWidget {
 
   LoginPage({super.key, required this.onTap});
 
- void login(BuildContext context) async {
-  final authServices = AuthServices();
+  void login(BuildContext context) async {
+    final authServices = AuthServices();
 
-  try {
-    await authServices.signIn(
-      _emailController.text.trim(),
-      _passwordController.text.trim(),
-    );
+    if (_emailController.text.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Erreur"),
+          content: const Text("Veuillez entrer votre email."),
+          actions: [
+            TextButton(
+              onPressed: () => context.pop(),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+    if (_passwordController.text.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Erreur"),
+          content: const Text("Veuillez entrer votre mot de passe."),
+          actions: [
+            TextButton(
+              onPressed: () => context.pop(),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
 
-    Future.microtask(() => context.go('/home'));
-  } catch (e) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Erreur"),
-        content: Text(e.toString()),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text("OK"),
-          ),
-        ],
-      ),
-    );
+    try {
+      await authServices.signIn(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+      );
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      bool notificationsEnabled =
+          prefs.getBool('notifications_enabled') ?? false;
+
+      if (notificationsEnabled) {
+        NotificationService().initNotification();
+        NotificationService().showNotification(
+          title: "Bienvenue ${_emailController.text} !",
+          body: "Vous êtes connecté avec succès.",
+        );
+      }
+
+      Future.microtask(() => context.go('/home'));
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Erreur"),
+          content: Text(e.toString()),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +123,7 @@ class LoginPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    "Login",
+                    "Connexion",
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -85,7 +131,7 @@ class LoginPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   const Text(
-                    "Please sign in to continue",
+                    "Connectez-vous à votre compte",
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w300,
@@ -100,7 +146,7 @@ class LoginPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 15),
                   MyTextField(
-                    hintText: "Password",
+                    hintText: "Mot de passe",
                     icon: const Icon(Icons.lock_outline),
                     controller: _passwordController,
                     obscureText: true,
@@ -108,7 +154,7 @@ class LoginPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 15),
                   MyButton(
-                    text: "Sign in",
+                    text: "Se connecter",
                     onPressed: () {
                       login(context);
                     },
@@ -119,11 +165,11 @@ class LoginPage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("New User ? "),
+                      const Text("Vous n'avez pas de compte ?"),
                       GestureDetector(
                         onTap: onTap,
                         child: Text(
-                          "Create Account",
+                          "Créer un compte",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.blue.shade400,

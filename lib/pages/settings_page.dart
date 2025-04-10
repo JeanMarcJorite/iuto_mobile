@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:iuto_mobile/db/auth_services.dart';
+import 'package:iuto_mobile/services/auth_services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iuto_mobile/widgets/sectionHead_widget.dart';
-import 'package:iuto_mobile/widgets/settings_widget.dart';
+import 'package:iuto_mobile/widgets/index.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -10,10 +9,9 @@ class SettingsPage extends StatelessWidget {
   Future<void> _logout(BuildContext context) async {
     final authService = AuthServices();
     try {
+      context.go('/login');
+
       await authService.logOut();
-      if (context.mounted) {
-        context.go('/login');
-      }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -8,45 +8,55 @@ class ImagesProvider extends ChangeNotifier {
   final StorageServices _storageServices = StorageServices();
   final ImagePicker _picker = ImagePicker();
 
-  final List<File> _localImages = [];
-  List<File> get localImages => _localImages;
+  List<String> _restaurantImages = [];
+  List<String> _userImages = [];
+  List<File> _localImages = [];
 
-  List<String> _imageUrls = [];
-  List<String> get imageUrls => _imageUrls;
+  List<String> get restaurantImages => _restaurantImages;
+  List<String> get userImages => _userImages;
+  List<File> get localImages => _localImages;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  Future<void> fetchImagesByRestaurantId(String restaurantId) async {
+  Future<void> fetchRestaurantImages(String restaurantId) async {
+    if (restaurantId.isEmpty) {
+      _restaurantImages = [];
+      notifyListeners();
+      return;
+    }
+
     _isLoading = true;
     try {
-      final imageUrls = await _storageServices.getImagesByRestoId(restaurantId);
-      _imageUrls = imageUrls;
+      _restaurantImages =
+          await _storageServices.getImagesByRestoId(restaurantId);
     } catch (e) {
-      print('Erreur lors de la récupération des images : $e');
-      _imageUrls = [];
+      debugPrint('Error fetching restaurant images: $e');
+      _restaurantImages = [];
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> fetchImagesByUserId(String restaurantId, String userId) async {
+  Future<void> fetchUserImages(String userId) async {
     _isLoading = true;
-
     try {
-      final imageUrls = await _storageServices.getImagesRestoByUserId(
-        'restaurants_photos/$restaurantId',
-        userId,
-      );
-      _imageUrls = imageUrls;
+      _userImages = await _storageServices.getAllUserImages(userId);
+      debugPrint('Fetched ${_userImages.length} user images');
     } catch (e) {
-      print('Erreur lors de la récupération des images : $e');
-      _imageUrls = [];
+      debugPrint('Error fetching user images: $e');
+      _userImages = [];
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  void clearAllImages() {
+    _restaurantImages = [];
+    _userImages = [];
+    notifyListeners();
   }
 
   Future<void> addImage(ImageSource source) async {
@@ -87,10 +97,32 @@ class ImagesProvider extends ChangeNotifier {
     }
   }
 
-  void removeImage(int index) {
+  void removeImageLocal(int index) {
     if (index >= 0 && index < _localImages.length) {
       _localImages.removeAt(index);
       notifyListeners();
+    }
+  }
+
+  Future<void> deleteImage(String imageUrl) {
+    return _storageServices.removeImage(imageUrl);
+  }
+
+  Future<void> deleteAllImages(String path) {
+    return _storageServices.removeAllImages(path);
+  }
+
+  Future<void> uploadImage(String restaurantId, String userId) async {
+    if (_localImages.isNotEmpty) {
+      final image = _localImages.first;
+      try {
+        final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final path = 'restaurants_photos/$restaurantId/$userId/$fileName';
+
+        await _storageServices.uploadFile(path, image);
+      } catch (e) {
+        print('Erreur lors du téléchargement de l\'image : $e');
+      }
     }
   }
 

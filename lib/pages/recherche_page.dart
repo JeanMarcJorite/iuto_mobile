@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iuto_mobile/providers/restaurant_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:iuto_mobile/widgets/restaurant_card.dart';
+import 'package:iuto_mobile/widgets/index.dart';
 
 class RecherchePage extends StatefulWidget {
   const RecherchePage({super.key, required this.search});
@@ -49,12 +49,7 @@ class _RecherchePageState extends State<RecherchePage> {
     setState(() => _isSearching = false);
   }
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    _searchFocusNode.dispose();
-    super.dispose();
-  }
+
 
   @override
   Widget build(BuildContext context) {

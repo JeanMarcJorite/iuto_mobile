@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iuto_mobile/db/data/Critiques/critique.dart';
+import 'package:iuto_mobile/db/models/critique.dart';
 import 'package:iuto_mobile/db/supabase_service.dart';
 
 class CritiqueProvider with ChangeNotifier {
@@ -20,6 +20,22 @@ class CritiqueProvider with ChangeNotifier {
           await SupabaseService.selectCritiquesByRestaurantId(restaurantId);
     } catch (e) {
       debugPrint('Erreur lors du chargement des critiques : $e');
+      _critiques = [];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadCritiquesByUserId(String userId) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _critiques = await SupabaseService.selectCritiquesByUserId(userId);
+    } catch (e) {
+      debugPrint('Erreur lors du chargement des critiques : $e');
+      _error = 'Erreur lors du chargement des critiques';
       _critiques = [];
     } finally {
       _isLoading = false;
@@ -48,7 +64,9 @@ class CritiqueProvider with ChangeNotifier {
     if (_critiques.isEmpty) {
       return 0.0;
     }
-    double totalNote = _critiques.map((critique) => critique.note.toDouble()).reduce((a, b) => a + b);
+    double totalNote = _critiques
+        .map((critique) => critique.note.toDouble())
+        .reduce((a, b) => a + b);
     return totalNote / _critiques.length;
   }
 }

@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/services.dart';
 import 'package:iuto_mobile/db/supabase_service.dart';
 
@@ -77,4 +76,54 @@ class StorageServices {
       return [];
     }
   }
+
+  Future<List<String>> getAllUserImages(String userId) async {
+    try {
+      final restaurants = await supabaseServiceStorage.storage
+          .from("images")
+          .list(path: 'restaurants_photos');
+
+      List<String> allImages = [];
+
+      for (final restaurant in restaurants) {
+        try {
+          final userImages = await supabaseServiceStorage.storage
+              .from("images")
+              .list(path: 'restaurants_photos/${restaurant.name}/$userId');
+
+          final urls = userImages.map((file) {
+            return supabaseServiceStorage.storage.from("images").getPublicUrl(
+                'restaurants_photos/${restaurant.name}/$userId/${file.name}');
+          }).toList();
+
+          allImages.addAll(urls);
+        } catch (e) {
+          continue;
+        }
+      }
+
+      return allImages;
+    } catch (e) {
+      print('Error getting all user images: $e');
+      return [];
+    }
+  }
+
+  Future<void> removeImage(String imageUrl) async {
+    try {
+      await supabaseServiceStorage.storage.from("images").remove([imageUrl]);
+    } catch (e) {
+      print('Failed to delete image: $e');
+    }
+  }
+
+  Future<void> removeAllImages(String path) async {
+    try {
+      await supabaseServiceStorage.storage.from("images").remove([path]);
+    } catch (e) {
+      print('Failed to delete all images: $e');
+    }
+  }
+
+  
 }

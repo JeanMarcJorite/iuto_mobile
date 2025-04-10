@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:iuto_mobile/db/auth_services.dart';
+import 'package:iuto_mobile/services/auth_services.dart';
 import 'package:provider/provider.dart';
 import 'package:iuto_mobile/providers/favoris_provider.dart';
-import 'package:iuto_mobile/db/data/Favoris/favoris.dart';
+import 'package:iuto_mobile/db/models/favoris.dart';
 
 class LikeWidget extends StatefulWidget {
   final int restaurantId;
@@ -118,8 +118,4 @@ class _LikeWidgetState extends State<LikeWidget> {
     );
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
 }

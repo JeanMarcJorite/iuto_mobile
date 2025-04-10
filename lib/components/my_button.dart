@@ -2,16 +2,24 @@ import 'package:flutter/material.dart';
 
 class MyButton extends StatelessWidget {
   final String text;
-  final void Function()? onPressed;
+  final VoidCallback? onPressed;
   final double elevation;
   final double fontSize;
+  final bool isLoading;
+  final Color? backgroundColor;
+  final Color? textColor;
+  final EdgeInsetsGeometry? padding;
 
   const MyButton({
     super.key,
     required this.text,
     required this.onPressed,
-    required this.elevation,
-    required this.fontSize,
+    this.elevation = 5.0,
+    this.fontSize = 15.0,
+    this.isLoading = false,
+    this.backgroundColor,
+    this.textColor,
+    this.padding,
   });
 
   @override
@@ -21,20 +29,38 @@ class MyButton extends StatelessWidget {
       children: [
         Expanded(
           child: ElevatedButton(
-            onPressed: onPressed,
+            onPressed: isLoading ? null : onPressed,
             style: ButtonStyle(
-                elevation: WidgetStateProperty.all(elevation),
-                backgroundColor: WidgetStateProperty.all(Colors.blue.shade400),
-                shape: WidgetStateProperty.all(RoundedRectangleBorder(
+              elevation: MaterialStateProperty.all(elevation),
+              backgroundColor: MaterialStateProperty.all(
+                backgroundColor ?? Colors.blue.shade400,
+              ),
+              shape: MaterialStateProperty.all(
+                RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.0),
-                ))),
-            child: Text(
-              text,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: fontSize,
+                ),
+              ),
+              padding: MaterialStateProperty.all(
+                padding ?? const EdgeInsets.symmetric(vertical: 16.0),
               ),
             ),
+            child: isLoading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : Text(
+                    text,
+                    style: TextStyle(
+                      color: textColor ?? Colors.white,
+                      fontSize: fontSize,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
           ),
         ),
       ],

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iuto_mobile/db/data/Preferences/preferences.dart';
+import 'package:iuto_mobile/db/models/preferences.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';

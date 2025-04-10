@@ -3,15 +3,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iuto_mobile/db/data/Restaurants/restaurant.dart';
+import 'package:iuto_mobile/db/models/restaurant.dart';
 import 'package:iuto_mobile/db/iutoDB.dart';
 import 'package:iuto_mobile/db/supabase_service.dart';
 import 'package:iuto_mobile/providers/favoris_provider.dart';
-import 'package:iuto_mobile/widgets/filters_widgets.dart';
+import 'package:iuto_mobile/widgets/index.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import 'package:iuto_mobile/providers/restaurant_provider.dart';
 import 'package:iuto_mobile/providers/geolocalisation_provider.dart';
-import 'package:iuto_mobile/widgets/restaurant_card.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -23,6 +24,9 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   StreamSubscription<Position>? _positionSubscription;
   final TextEditingController _searchController = TextEditingController();
+  LatLng? _currentPosition;
+  bool _isLoadingLocation = true;
+  bool _locationEnabled = true;
 
   @override
   void initState() {
@@ -34,8 +38,44 @@ class _MyHomePageState extends State<MyHomePage> {
     await Provider.of<RestaurantProvider>(context, listen: false)
         .loadRestaurants();
     await _loadRestaurantsByPreferences();
+    _checkLocationSettings();
 
     _setupLocationUpdates();
+  }
+
+  Future<void> _checkLocationSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _locationEnabled = prefs.getBool('localisation') ?? true;
+    });
+
+    if (_locationEnabled) {
+      await _getCurrentLocation();
+    } else {
+      setState(() => _isLoadingLocation = false);
+    }
+  }
+
+  Future<void> _getCurrentLocation() async {
+    try {
+      final geoProvider =
+          Provider.of<GeolocalisationProvider>(context, listen: false);
+      await geoProvider.loadCurrentPosition();
+
+      if (geoProvider.currentPosition != null && mounted) {
+        setState(() {
+          _currentPosition = LatLng(
+            geoProvider.currentPosition!.latitude,
+            geoProvider.currentPosition!.longitude,
+          );
+          _isLoadingLocation = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingLocation = false);
+      }
+    }
   }
 
   void _setupLocationUpdates() {
@@ -111,6 +151,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget _buildRestaurantsByPreferences(RestaurantProvider provider) {
     final preferredRestaurants = provider.restaurantsPreferences;
+    final maxItemsToShow = 3;
 
     if (preferredRestaurants.isEmpty) {
       return const SizedBox.shrink();
@@ -119,15 +160,23 @@ class _MyHomePageState extends State<MyHomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Restaurants selon vos préférences',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        _buildSectionHeader(
+          title: 'Selon vos préférences',
+          voirPlus: preferredRestaurants.length > maxItemsToShow
+              ? () => _navigateToRestaurantList(
+                    context,
+                    title: 'Restaurants selon vos préférences',
+                    restaurants: preferredRestaurants,
+                  )
+              : () {},
         ),
         const SizedBox(height: 16),
         ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: preferredRestaurants.length,
+          itemCount: preferredRestaurants.length > maxItemsToShow
+              ? maxItemsToShow
+              : preferredRestaurants.length,
           itemBuilder: (context, index) {
             return RestaurantCard(
               restaurant: preferredRestaurants[index],
@@ -149,6 +198,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('IUTables\'O'),
+        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_alt),
@@ -160,9 +210,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     Provider.of<RestaurantProvider>(context, listen: false)
                         .setFilters(filters);
                   },
-                  initialFilters: Provider.of<RestaurantProvider>(context,
-                          listen: false)
-                      .activeFilters,
+                  initialFilters:
+                      Provider.of<RestaurantProvider>(context, listen: false)
+                          .activeFilters,
                 ),
               );
             },
@@ -221,31 +271,14 @@ class _MyHomePageState extends State<MyHomePage> {
               const SizedBox(height: 32),
               _buildRestaurantsEtoile(restaurantProvider),
               const SizedBox(height: 32),
-              _buildNearestRestaurants(restaurantProvider),
+              if (_locationEnabled && _currentPosition != null)
+                _buildNearestRestaurants(restaurantProvider),
               const SizedBox(height: 32),
               _buildPluslikeRestaurant(),
             ],
           ),
         );
       },
-    );
-  }
-
-  Widget _buildWelcomeSection() {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Bienvenue sur la page d\'accueil',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 8),
-        Text(
-          'Bienvenue sur notre plateforme de comparateur de restaurants en ligne. '
-          'Vous pouvez comparer les restaurants de la région Orléanaise.',
-          style: TextStyle(fontSize: 16),
-        ),
-      ],
     );
   }
 
@@ -281,9 +314,13 @@ class _MyHomePageState extends State<MyHomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Les restaurants étoilés',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        _buildSectionHeader(
+          title: 'Les restaurants étoilés',
+          voirPlus: () => _navigateToRestaurantList(
+            context,
+            title: 'Restaurants étoilés',
+            restaurants: topRestaurants,
+          ),
         ),
         const SizedBox(height: 16),
         SizedBox(
@@ -317,9 +354,13 @@ class _MyHomePageState extends State<MyHomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Les restaurants les plus proches',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        _buildSectionHeader(
+          title: 'Les restaurants les plus proches',
+          voirPlus: () => _navigateToRestaurantList(
+            context,
+            title: 'Restaurants les plus proches',
+            restaurants: plusProcheResto,
+          ),
         ),
         const SizedBox(height: 16),
         ListView.builder(
@@ -368,9 +409,17 @@ class _MyHomePageState extends State<MyHomePage> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Les plus populaires',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            _buildSectionHeader(
+              title: 'Les plus populaires',
+              voirPlus: () => _navigateToRestaurantList(
+                context,
+                title: 'Restaurants les plus populaires',
+                restaurants: restaurantProvider.restaurants
+                    .where((r) => restaurantLikesCount[r.id] != null)
+                    .toList()
+                  ..sort((a, b) => (restaurantLikesCount[b.id] ?? 0)
+                      .compareTo(restaurantLikesCount[a.id] ?? 0)),
+              ),
             ),
             const SizedBox(height: 16),
             SizedBox(
@@ -399,6 +448,42 @@ class _MyHomePageState extends State<MyHomePage> {
         );
       },
     );
+  }
+
+  Widget _buildSectionHeader({
+    required String title,
+    required VoidCallback voirPlus,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        TextButton(
+          onPressed: voirPlus,
+          child: const Row(
+            children: [
+              Text('Voir plus'),
+              SizedBox(width: 4),
+              Icon(Icons.arrow_forward_ios, size: 16),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _navigateToRestaurantList(
+    BuildContext context, {
+    required String title,
+    required List<Restaurant> restaurants,
+  }) {
+    context.push('/restaurant-list', extra: {
+      'title': title,
+      'restaurants': restaurants,
+    });
   }
 }
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iuto_mobile/db/data/Favoris/favoris.dart';
+import 'package:iuto_mobile/db/models/favoris.dart';
 import 'package:iuto_mobile/db/supabase_service.dart';
 
 class FavorisProvider extends ChangeNotifier {
@@ -23,6 +23,7 @@ class FavorisProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+  
 
   int getTotalFavorisCount(int restaurantId) {
     return _allFavoris

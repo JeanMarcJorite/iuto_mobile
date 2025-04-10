@@ -24,7 +24,7 @@ class MyUserEntity
 
   Map<String, Object?> toDocument() {
     return {
-      
+      "id": id,
       'pseudo': pseudo,
       'email': email,
       'nom': nom,

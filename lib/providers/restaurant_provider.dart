@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:iuto_mobile/db/data/Restaurants/restaurant.dart';
+import 'package:iuto_mobile/db/models/restaurant.dart';
 import 'package:iuto_mobile/db/supabase_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RestaurantProvider with ChangeNotifier {
   List<Restaurant> _allRestaurants = [];
   List<Restaurant> _filteredRestaurants = [];
-  List<Restaurant> _restaurantsPreferences = []; // Restaurants par préférences
+  List<Restaurant> _restaurantsPreferences = [];
   Restaurant? _selectedRestaurant;
   List<String> _restoLike = [];
   Map<String, dynamic> _activeFilters = {};
@@ -27,13 +27,11 @@ class RestaurantProvider with ChangeNotifier {
 
   Map<String, dynamic> get activeFilters => Map.from(_activeFilters);
 
-  // Ajouter une propriété pour vérifier si des filtres sont actifs
   bool get hasActiveFilters => _activeFilters.entries
       .where((entry) => entry.key != 'searchQuery')
       .any((entry) => entry.value == true) || 
       (_activeFilters['searchQuery'] != null && _activeFilters['searchQuery'].toString().isNotEmpty);
   
-  // Ajouter une propriété pour vérifier si aucun restaurant ne correspond aux filtres actifs
   bool get hasNoResults => hasActiveFilters && _filteredRestaurants.isEmpty;
 
   Future<void> loadRestaurants() async {
@@ -75,13 +73,10 @@ class RestaurantProvider with ChangeNotifier {
     _isLoading = true;
 
     try {
-      // Récupérer les propositions correspondant aux préférences
       final proposes = await SupabaseService.selectProposeByCuisineIds(preferredCuisineIds);
 
-      // Extraire les IDs des restaurants correspondants
       final restaurantIds = proposes.map((propose) => propose.idRestaurant).toSet();
 
-      // Filtrer les restaurants correspondants
       _restaurantsPreferences = _allRestaurants
           .where((restaurant) => restaurantIds.contains(restaurant.id))
           .toList();
@@ -113,8 +108,8 @@ class RestaurantProvider with ChangeNotifier {
 
   void clearFilters() {
     debugPrint("Suppression des filtres");
-    _activeFilters = {}; // Réinitialiser tous les filtres
-    _filteredRestaurants = []; // Réinitialiser les résultats filtrés
+    _activeFilters = {}; 
+    _filteredRestaurants = []; 
     notifyListeners();
   }
 
@@ -175,7 +170,6 @@ class RestaurantProvider with ChangeNotifier {
     debugPrint(
         "${_filteredRestaurants.length} restaurants après filtrage sur ${_allRestaurants.length} restaurants total");
     
-    // Afficher un log si aucun restaurant ne correspond aux filtres
     if (_filteredRestaurants.isEmpty) {
       debugPrint("ATTENTION: Aucun restaurant ne correspond aux filtres actifs!");
     }
