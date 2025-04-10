@@ -60,10 +60,11 @@ class SignUpPage extends StatelessWidget {
         showSnackBar(context, 'Un utilisateur avec cet email existe déjà');
         return;
       }
-
+      final user = await authService.signUp(myUser, _passwordController.text.trim());
+      myUser.id = user.id;
+      print("User ID: ${myUser.id}");
       await supabaseService.insertUser(myUser.toEntity());
 
-      await authService.signUp(myUser, _passwordController.text.trim());
 
 
 
