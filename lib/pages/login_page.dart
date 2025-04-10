@@ -16,6 +16,39 @@ class LoginPage extends StatelessWidget {
   void login(BuildContext context) async {
     final authServices = AuthServices();
 
+    if (_emailController.text.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Erreur"),
+          content: const Text("Veuillez entrer votre email."),
+          actions: [
+            TextButton(
+              onPressed: () => context.pop(),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+    if (_passwordController.text.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Erreur"),
+          content: const Text("Veuillez entrer votre mot de passe."),
+          actions: [
+            TextButton(
+              onPressed: () => context.pop(),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     try {
       await authServices.signIn(
         _emailController.text.trim(),
@@ -23,7 +56,8 @@ class LoginPage extends StatelessWidget {
       );
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      bool notificationsEnabled = prefs.getBool('notifications_enabled') ?? false;
+      bool notificationsEnabled =
+          prefs.getBool('notifications_enabled') ?? false;
 
       if (notificationsEnabled) {
         NotificationService().initNotification();

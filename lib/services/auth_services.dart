@@ -63,9 +63,8 @@ class AuthServices implements UserRepository {
         throw Exception('Failed to sign up: User is null');
       }
       myUser.id = response.user!.id;
-      
 
-      await  SupabaseService().insertUser(myUser.toEntity());
+      await SupabaseService().insertUser(myUser.toEntity());
       return myUser;
     } on AuthException catch (e) {
       throw Exception('Failed to sign up: ${e.message}');

@@ -40,7 +40,7 @@ Future<void> main() async {
     final IutoDB db = IutoDB();
     debugPrint('Base de données locale initialisée avec succès.');
 
-    debugPrint('Initialisation de la géolocalisation...');
+    debugPrint('Initialisation de la notification...');
     NotificationService().initNotification();
     debugPrint('Service de notification initialisé avec succès.');
 
