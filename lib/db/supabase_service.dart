@@ -117,6 +117,24 @@ Future<bool> userExists(String email) async {
     return {}; // Retournez une map vide en cas d'erreur
   }
 }
+static Future<Map<String, dynamic>> selectUserByEmail(String email) async {
+    try {
+      final response = await supabase
+          .from('UTILISATEURS')
+          .select()
+          .eq('email', email)
+          .maybeSingle(); // Utilisez maybeSingle pour éviter les erreurs si aucun résultat n'est trouvé
+
+      if (response == null) {
+        throw Exception('Aucun utilisateur trouvé avec cet email.');
+      }
+
+      return response;
+    } catch (e) {
+      debugPrint('Erreur lors de la récupération de l\'utilisateur : $e');
+      return {}; // Retournez une map vide en cas d'erreur
+    }
+  }
 
   static Future<List<Restaurant>> selectRestaurants() async {
     final response = await supabase.from('Restaurants').select();
