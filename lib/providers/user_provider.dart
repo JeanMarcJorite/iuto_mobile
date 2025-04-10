@@ -35,6 +35,25 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 }
+Future<void> fetchUserByEmail() async {
+  final session = Supabase.instance.client.auth.currentSession;
+  if (session != null) {
+    final userEmail = session.user.email;
+    try {
+      final fetchedUser = await SupabaseService.selectUserByEmail(userEmail!);
+      if (fetchedUser.isNotEmpty) {
+        _user = fetchedUser;
+      } else {
+        debugPrint('Aucun utilisateur trouvé pour l\'email : $userEmail');
+        _user = {}; // Si aucun utilisateur n'est trouvé
+      }
+    } catch (e) {
+      debugPrint('Erreur lors de la récupération des données utilisateur : $e');
+      _user = {}; // En cas d'erreur, définissez une map vide
+    }
+    notifyListeners();
+  }
+}
 
   Future<void> logOut(BuildContext context) async {
     _user = {};
