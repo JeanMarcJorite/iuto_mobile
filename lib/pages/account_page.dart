@@ -11,7 +11,7 @@ class AccountPage extends StatelessWidget {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
 
     return FutureBuilder(
-      future: userProvider.fetchUser(),
+      future: userProvider.fetchUserByEmail(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
