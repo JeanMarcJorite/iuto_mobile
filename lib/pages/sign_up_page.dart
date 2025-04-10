@@ -53,6 +53,7 @@ class _SignUpPageState extends State<SignUpPage> {
         throw 'Le prénom est requis';
       }
 
+
       final authResponse = await Supabase.instance.client.auth.signUp(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
@@ -61,6 +62,7 @@ class _SignUpPageState extends State<SignUpPage> {
       if (authResponse.user == null) {
         throw 'Erreur lors de la création du compte';
       }
+
 
       final myUser = MyUser(
         id: authResponse.user!.id,

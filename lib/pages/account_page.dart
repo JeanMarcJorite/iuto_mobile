@@ -35,9 +35,26 @@ class _AccountPageState extends State<AccountPage> {
         .loadCritiquesByUserId(userId);
   }
 
-  @override
+ @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+    return FutureBuilder(
+      future: userProvider.fetchUserByEmail(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return Scaffold(
+            body: Center(child: Text('Erreur : ${snapshot.error}')),
+          );
+        }
+
+        final user = userProvider.user
 
     return Scaffold(
       appBar: AppBar(
