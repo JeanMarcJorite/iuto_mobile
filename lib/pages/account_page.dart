@@ -24,8 +24,15 @@ class _AccountPageState extends State<AccountPage> {
   }
 
   Future<void> _initializeAllData() async {
+  try {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    await userProvider.fetchUser();
+    await userProvider.fetchUserByEmail(); // Récupérer l'utilisateur par email
+    final userEmail = userProvider.user['email'];
+    // Vérifiez si l'utilisateur est correctement chargé
+    if (userProvider.user == null || userEmail == null) {
+      throw Exception('Les données utilisateur sont manquantes ou invalides.');
+    }
+   
     final userId = userProvider.user['id'];
     await Provider.of<FavorisProvider>(context, listen: false)
         .loadFavorisbyUser(userId);
@@ -33,28 +40,15 @@ class _AccountPageState extends State<AccountPage> {
         .fetchUserImages(userId);
     await Provider.of<CritiqueProvider>(context, listen: false)
         .loadCritiquesByUserId(userId);
+  } catch (e) {
+    debugPrint('Erreur lors de l\'initialisation des données : $e');
+    rethrow;
   }
+}
 
- @override
+  @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-
-    return FutureBuilder(
-      future: userProvider.fetchUserByEmail(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        if (snapshot.hasError) {
-          return Scaffold(
-            body: Center(child: Text('Erreur : ${snapshot.error}')),
-          );
-        }
-
-        final user = userProvider.user
 
     return Scaffold(
       appBar: AppBar(
@@ -94,7 +88,7 @@ class _AccountPageState extends State<AccountPage> {
                     const SizedBox(height: 24),
                     UserInfoSection(user: userProvider.user),
                     const SizedBox(height: 32),
-                    ActionButtonsSection(),
+                    const ActionButtonsSection(),
                   ]),
                 ),
               ),
