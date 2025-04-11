@@ -21,28 +21,26 @@ class SupabaseService {
 
   Future<Map<String, dynamic>> insertUser(MyUserEntity user) async {
     try {
-      // Hachez le mot de passe
       user.mdp = hashPassword(user.mdp);
-      print('Mot de passe haché : ${user.mdp}');
+      debugPrint('Mot de passe haché : ${user.mdp}');
 
-      // Préparez les données pour l'insertion
       final userDocument = user.toDocument();
       debugPrint('Données utilisateur : $userDocument');
-      print('Tentative d\'insertion de l\'utilisateur : $userDocument');
-      if (await SupabaseService().userExists(user.email)) {
+
+      if (await userExists(user.email)) {
         throw Exception('Un utilisateur avec cet email existe déjà.');
       }
-      // Insérez l'utilisateur dans la base de données
+
       final response = await supabase
           .from('UTILISATEURS')
           .insert(userDocument)
           .select()
           .single();
 
-      print('Utilisateur inséré avec succès : $response');
+      debugPrint('Utilisateur inséré avec succès : $response');
       return response;
     } catch (e) {
-      print('Erreur lors de l\'insertion de l\'utilisateur : $e');
+      debugPrint('Erreur lors de l\'insertion de l\'utilisateur : $e');
       throw Exception('Failed to insert user: $e');
     }
   }
@@ -57,9 +55,23 @@ class SupabaseService {
 
       return response != null;
     } catch (e) {
-      print(
+      debugPrint(
           'Erreur lors de la vérification de l\'existence de l\'utilisateur : $e');
       return false;
+    }
+  }
+static Future<List<Critique>> selectCritiquesByRestaurantId(
+      int restaurantId) async {
+    try {
+      final response =
+          await supabase.from('Critiquer').select().eq('idR', restaurantId);
+
+      final critiques =
+          response.map((critique) => Critique.fromMap(critique)).toList();
+      return critiques;
+    } catch (e) {
+      debugPrint('Erreur lors de la récupération des critiques : $e');
+      return [];
     }
   }
 
@@ -73,22 +85,20 @@ class SupabaseService {
           .maybeSingle();
 
       if (response == null) {
-        print("Aucun utilisateur trouvé avec cet email.");
+        debugPrint("Aucun utilisateur trouvé avec cet email.");
         return {'success': false, 'user': null};
       }
 
       final hashedPassword = response['mdp'];
-      print("Mot de passe haché récupéré : $hashedPassword");
-      print("Mot de passe fourni : $password");
       if (_verifyPassword(password, hashedPassword)) {
-        print("Connexion réussie pour l'utilisateur : ${response['pseudo']}");
+        debugPrint("Connexion réussie pour l'utilisateur : ${response['pseudo']}");
         return {'success': true, 'user': response};
       } else {
-        print("Mot de passe incorrect.");
+        debugPrint("Mot de passe incorrect.");
         return {'success': false, 'user': null};
       }
     } catch (error) {
-      print("Erreur lors de la connexion : $error");
+      debugPrint("Erreur lors de la connexion : $error");
       return {'success': false, 'error': error.toString()};
     }
   }
@@ -107,7 +117,7 @@ class SupabaseService {
           .from('UTILISATEURS')
           .select()
           .eq('id', id)
-          .maybeSingle(); // Utilisez maybeSingle pour éviter les erreurs si aucun résultat n'est trouvé
+          .maybeSingle();
 
       if (response == null) {
         throw Exception('Aucun utilisateur trouvé avec cet ID.');
@@ -116,18 +126,17 @@ class SupabaseService {
       return response;
     } catch (e) {
       debugPrint('Erreur lors de la récupération de l\'utilisateur : $e');
-      return {}; // Retournez une map vide en cas d'erreur
+      return {};
     }
   }
 
-}
-static Future<Map<String, dynamic>> selectUserByEmail(String email) async {
+  static Future<Map<String, dynamic>> selectUserByEmail(String email) async {
     try {
       final response = await supabase
           .from('UTILISATEURS')
           .select()
           .eq('email', email)
-          .maybeSingle(); // Utilisez maybeSingle pour éviter les erreurs si aucun résultat n'est trouvé
+          .maybeSingle();
 
       if (response == null) {
         throw Exception('Aucun utilisateur trouvé avec cet email.');
@@ -136,57 +145,36 @@ static Future<Map<String, dynamic>> selectUserByEmail(String email) async {
       return response;
     } catch (e) {
       debugPrint('Erreur lors de la récupération de l\'utilisateur : $e');
-      return {}; // Retournez une map vide en cas d'erreur
+      return {};
     }
   }
 
-
   static Future<List<Restaurant>> selectRestaurants() async {
-    final response = await supabase.from('Restaurants').select();
+    try {
+      final response = await supabase.from('Restaurants').select();
 
-    if (response.isEmpty) {
-      throw Exception('Aucune donnée trouvée pour les restaurants.');
+      if (response.isEmpty) {
+        throw Exception('Aucune donnée trouvée pour les restaurants.');
+      }
+
+      return (response as List<dynamic>)
+          .map((restaurant) =>
+              Restaurant.fromMap(restaurant as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      debugPrint('Erreur lors de la récupération des restaurants : $e');
+      return [];
     }
-
-    return (response as List<dynamic>)
-        .map((restaurant) =>
-            Restaurant.fromMap(restaurant as Map<String, dynamic>))
-        .toList();
   }
 
   static Future<Restaurant> selectRestaurantById(int id) async {
-    final response =
-        await supabase.from('Restaurants').select().eq('id', id).single();
-    return Restaurant.fromMap(response);
-  }
-
-  static Future<List<String>> getAllTables() async {
-    try {
-      final response = await supabase.rpc('get_all_tables');
-
-      if (response is List) {
-        return response.map((table) => table['tablename'] as String).toList();
-      } else {
-        throw Exception('Erreur lors de la récupération des tables.');
-      }
-    } catch (e) {
-      debugPrint('Erreur : $e');
-      throw Exception('Impossible de récupérer les tables : $e');
-    }
-  }
-
-  static Future<List<Critique>> selectCritiquesByRestaurantId(
-      int restaurantId) async {
     try {
       final response =
-          await supabase.from('Critiquer').select().eq('idR', restaurantId);
-
-      final critiques =
-          response.map((critique) => Critique.fromMap(critique)).toList();
-      return critiques;
+          await supabase.from('Restaurants').select().eq('id', id).single();
+      return Restaurant.fromMap(response);
     } catch (e) {
-      debugPrint('Erreur lors de la récupération des critiques : $e');
-      return [];
+      debugPrint('Erreur lors de la récupération du restaurant : $e');
+      throw Exception('Impossible de récupérer le restaurant : $e');
     }
   }
 
@@ -195,9 +183,9 @@ static Future<Map<String, dynamic>> selectUserByEmail(String email) async {
       final response =
           await supabase.from('Critiquer').select().eq('idU', userId);
 
-      final critiques =
-          response.map((critique) => Critique.fromMap(critique)).toList();
-      return critiques;
+      return response
+          .map((critique) => Critique.fromMap(critique))
+          .toList();
     } catch (e) {
       debugPrint('Erreur lors de la récupération des critiques : $e');
       return [];
@@ -205,17 +193,28 @@ static Future<Map<String, dynamic>> selectUserByEmail(String email) async {
   }
 
   static Future<void> insertCritique(Map<String, dynamic> critique) async {
-    await supabase.from('Critiquer').insert(critique);
+    try {
+      await supabase.from('Critiquer').insert(critique);
+    } catch (e) {
+      debugPrint('Erreur lors de l\'insertion de la critique : $e');
+    }
   }
 
   static Future<void> deleteCritique(String critiqueId) async {
-    debugPrint('Suppression de la critique avec l\'ID : $critiqueId');
-
-    await supabase.from('Critiquer').delete().eq('id', critiqueId);
+    try {
+      debugPrint('Suppression de la critique avec l\'ID : $critiqueId');
+      await supabase.from('Critiquer').delete().eq('id', critiqueId);
+    } catch (e) {
+      debugPrint('Erreur lors de la suppression de la critique : $e');
+    }
   }
 
   static Future<void> updateCritique(Map<String, dynamic> critique) async {
-    await supabase.from('Critiquer').update(critique).eq('id', critique['id']);
+    try {
+      await supabase.from('Critiquer').update(critique).eq('id', critique['id']);
+    } catch (e) {
+      debugPrint('Erreur lors de la mise à jour de la critique : $e');
+    }
   }
 
   static Future<List<Favoris>> selectFavoris() async {
@@ -246,11 +245,19 @@ static Future<Map<String, dynamic>> selectUserByEmail(String email) async {
   }
 
   static Future<void> insertFavoris(Map<String, dynamic> favoris) async {
-    await supabase.from('favoris').insert(favoris);
+    try {
+      await supabase.from('favoris').insert(favoris);
+    } catch (e) {
+      debugPrint('Erreur lors de l\'insertion des favoris : $e');
+    }
   }
 
   static Future<void> deleteFavoris(int id) async {
-    await supabase.from('favoris').delete().eq('id', id);
+    try {
+      await supabase.from('favoris').delete().eq('id', id);
+    } catch (e) {
+      debugPrint('Erreur lors de la suppression des favoris : $e');
+    }
   }
 
   static Future<int> getLastFavorisId() async {
