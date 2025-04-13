@@ -22,7 +22,7 @@ class MyUserEntity
     
   });
 
-  Map<String, Object?> toDocument() {
+  Map<String, Object?>  toDocument() {
     return {
       "id": id,
       'pseudo': pseudo,

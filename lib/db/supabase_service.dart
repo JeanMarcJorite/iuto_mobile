@@ -38,6 +38,7 @@ class SupabaseService {
           .single();
 
       debugPrint('Utilisateur inséré avec succès : $response');
+      debugPrint('ID inséré : ${response['id']}');
       return response;
     } catch (e) {
       debugPrint('Erreur lors de l\'insertion de l\'utilisateur : $e');
