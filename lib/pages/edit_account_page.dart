@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iuto_mobile/db/supabase_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class EditAccountPage extends StatefulWidget {
   const EditAccountPage({super.key});
@@ -11,11 +12,44 @@ class EditAccountPage extends StatefulWidget {
 class _EditAccountPageState extends State<EditAccountPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _confirmNewPasswordController =
-      TextEditingController();
-  String _username = '';
-  String _email = '';
+  final TextEditingController _confirmNewPasswordController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   String _currentPassword = '';
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Utilisateur non connecté.')),
+        );
+        return;
+      }
+
+      final userData = await SupabaseService.selectUserById(userId);
+      if (userData.isNotEmpty) {
+        setState(() {
+          _usernameController.text = userData['pseudo'] ?? '';
+          _emailController.text = userData['email'] ?? '';
+        });
+      } else {
+        debugPrint('Aucune donnée utilisateur trouvée pour ID : $userId');
+      }
+    } catch (e) {
+      debugPrint('Erreur lors du chargement des données utilisateur : $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur de chargement des données : $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,11 +64,8 @@ class _EditAccountPageState extends State<EditAccountPage> {
           child: Column(
             children: [
               TextFormField(
+                controller: _usernameController,
                 decoration: const InputDecoration(labelText: 'Username'),
-                initialValue: _username,
-                onSaved: (value) {
-                  _username = value ?? '';
-                },
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your username';
@@ -43,11 +74,8 @@ class _EditAccountPageState extends State<EditAccountPage> {
                 },
               ),
               TextFormField(
+                controller: _emailController,
                 decoration: const InputDecoration(labelText: 'Email'),
-                initialValue: _email,
-                onSaved: (value) {
-                  _email = value ?? '';
-                },
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your email';
@@ -63,10 +91,7 @@ class _EditAccountPageState extends State<EditAccountPage> {
                 decoration: const InputDecoration(labelText: 'New Password'),
                 obscureText: true,
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your new password';
-                  }
-                  if (value.length < 6) {
+                  if (value != null && value.isNotEmpty && value.length < 6) {
                     return 'Password must be at least 6 characters long';
                   }
                   return null;
@@ -74,14 +99,10 @@ class _EditAccountPageState extends State<EditAccountPage> {
               ),
               TextFormField(
                 controller: _confirmNewPasswordController,
-                decoration:
-                    const InputDecoration(labelText: 'Confirm New Password'),
+                decoration: const InputDecoration(labelText: 'Confirm New Password'),
                 obscureText: true,
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please confirm your new password';
-                  }
-                  if (value != _newPasswordController.text) {
+                  if (value != null && value.isNotEmpty && value != _newPasswordController.text) {
                     return 'Passwords do not match';
                   }
                   return null;
@@ -89,13 +110,16 @@ class _EditAccountPageState extends State<EditAccountPage> {
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState?.validate() ?? false) {
-                    _formKey.currentState?.save();
-                    _showPasswordDialog(context);
-                  }
-                },
-                child: const Text('Save Changes'),
+                onPressed: _isLoading
+                    ? null
+                    : () {
+                        if (_formKey.currentState?.validate() ?? false) {
+                          _showPasswordDialog(context);
+                        }
+                      },
+                child: _isLoading
+                    ? const CircularProgressIndicator()
+                    : const Text('Save Changes'),
               ),
             ],
           ),
@@ -114,8 +138,7 @@ class _EditAccountPageState extends State<EditAccountPage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-                'Please enter your current password to confirm changes.'),
+            const Text('Please enter your current password to confirm changes.'),
             const SizedBox(height: 10),
             TextField(
               controller: passwordController,
@@ -135,6 +158,7 @@ class _EditAccountPageState extends State<EditAccountPage> {
           ElevatedButton(
             onPressed: () {
               _currentPassword = passwordController.text.trim();
+              debugPrint('Mot de passe saisi dans le dialogue : $_currentPassword');
               Navigator.of(context).pop();
               _confirmChanges();
             },
@@ -145,62 +169,101 @@ class _EditAccountPageState extends State<EditAccountPage> {
     );
   }
 
-  void _confirmChanges() async {
+  Future<void> _confirmChanges() async {
+    setState(() => _isLoading = true);
+
     try {
-      // Vérifiez les valeurs avant de continuer
-      print("Email utilisé pour la vérification : $_email");
-      print("Mot de passe saisi : $_currentPassword");
-
-      // Vérifiez le mot de passe actuel via Supabase
-      final response = await SupabaseService.signIn(_email, _currentPassword);
-
-      if (response['success']) {
-        // Si le mot de passe est correct, appliquez les modifications
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Changes saved successfully!')),
-        );
-
-        // Sauvegarder les modifications
-        await _saveChanges();
-      } else {
-        // Si le mot de passe est incorrect
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Incorrect password. Please try again.')),
-        );
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) {
+        throw 'Utilisateur non connecté.';
       }
+
+      // Vérifier le mot de passe actuel
+      final userData = await SupabaseService.selectUserById(userId);
+      if (userData.isEmpty) {
+        throw 'Utilisateur non trouvé dans la base de données.';
+      }
+
+      debugPrint('Email utilisé pour la vérification : ${_emailController.text}');
+      debugPrint('Mot de passe saisi : $_currentPassword');
+      debugPrint('Mot de passe haché dans la base : ${userData['mdp']}');
+
+      // Vérifier avec BCrypt
+      final isPasswordValid = SupabaseService.verifyPassword(
+        _currentPassword,
+        userData['mdp'],
+      );
+
+      debugPrint('Mot de passe valide ? : $isPasswordValid');
+
+      if (!isPasswordValid) {
+        // Tester avec Supabase Auth comme secours
+        final authResponse = await Supabase.instance.client.auth.signInWithPassword(
+          email: userData['email'],
+          password: _currentPassword,
+        );
+        if (authResponse.user == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Incorrect password. Please try again.')),
+          );
+          return;
+        }
+      }
+
+      // Sauvegarder les modifications
+      await _saveChanges(userId);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Changes saved successfully!')),
+      );
     } catch (e) {
-      // Gestion des erreurs
+      debugPrint('Erreur lors de la confirmation des changements : $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('An error occurred: $e')),
       );
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _saveChanges() async {
-    try {
-      final updates = {
-        'pseudo': _username,
-        'email': _email,
-        if (_newPasswordController.text.isNotEmpty)
-          'mdp': SupabaseService.hashPassword(_newPasswordController
-              .text), // En dur pour correspondre à la base actuelle
-      };
+Future<void> _saveChanges(String userId) async {
+  try {
+    // Préparer les mises à jour
+    final updates = {
+      'pseudo': _usernameController.text.trim(),
+      'email': _emailController.text.trim(),
+      if (_newPasswordController.text.isNotEmpty)
+        'mdp': SupabaseService.hashPassword(_newPasswordController.text),
+    };
 
-      print("Mise à jour des données utilisateur : $updates");
+    debugPrint('Préparation des données utilisateur : $updates');
 
-      await SupabaseService.supabase
-          .from('UTILISATEURS')
-          .update(updates)
-          .eq('email', _email);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User information updated successfully!')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update user information: $e')),
+    // Mettre à jour Supabase Auth en premier
+    final currentEmail = Supabase.instance.client.auth.currentUser?.email ?? '';
+    if (_emailController.text.trim() != currentEmail) {
+      debugPrint('Mise à jour de l\'email dans auth.users : ${_emailController.text.trim()}');
+      await Supabase.instance.client.auth.updateUser(
+        UserAttributes(email: _emailController.text.trim()),
       );
     }
+
+    if (_newPasswordController.text.isNotEmpty) {
+      debugPrint('Mise à jour du mot de passe dans auth.users');
+      await Supabase.instance.client.auth.updateUser(
+        UserAttributes(password: _newPasswordController.text),
+      );
+    }
+
+    // Ensuite, mettre à jour UTILISATEURS
+    debugPrint('Mise à jour des données utilisateur dans UTILISATEURS : $updates');
+    await SupabaseService.supabase
+        .from('UTILISATEURS')
+        .update(updates)
+        .eq('id', userId);
+
+    debugPrint('Informations utilisateur mises à jour avec succès.');
+  } catch (e) {
+    debugPrint('Échec de la mise à jour des informations utilisateur : $e');
+    rethrow;
   }
+}
 }

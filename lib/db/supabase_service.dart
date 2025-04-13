@@ -108,6 +108,10 @@ static Future<List<Critique>> selectCritiquesByRestaurantId(
     return BCrypt.checkpw(password, hashedPassword);
   }
 
+  static bool verifyPassword(String password, String hashedPassword) {
+    return BCrypt.checkpw(password, hashedPassword);
+  }
+
   static String hashPassword(String password) {
     return BCrypt.hashpw(password, BCrypt.gensalt());
   }
