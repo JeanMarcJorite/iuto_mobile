@@ -27,13 +27,14 @@ class _AccountPageState extends State<AccountPage> {
   try {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     await userProvider.fetchUserByEmail(); // Récupérer l'utilisateur par email
-    final userEmail = userProvider.user['email'];
+    final userId = userProvider.user['id'];
+
+    //final userEmail = userProvider.user['id'];
     // Vérifiez si l'utilisateur est correctement chargé
-    if (userProvider.user == null || userEmail == null) {
+    if (userProvider.user == null || userId == null) {
       throw Exception('Les données utilisateur sont manquantes ou invalides.');
     }
    
-    final userId = userProvider.user['id'];
     await Provider.of<FavorisProvider>(context, listen: false)
         .loadFavorisbyUser(userId);
     await Provider.of<ImagesProvider>(context, listen: false)

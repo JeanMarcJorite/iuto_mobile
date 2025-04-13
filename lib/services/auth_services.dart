@@ -4,29 +4,33 @@ import 'package:iuto_mobile/db/models/Users/src/models/user_repo.dart';
 import 'package:iuto_mobile/db/models/Users/src/user_repository.dart';
 import 'package:iuto_mobile/db/supabase_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:developer';
+import 'package:flutter/foundation.dart';
 
 class AuthServices implements UserRepository {
   final SupabaseClient _supabase = Supabase.instance.client;
   final userCollection = Supabase.instance.client.from('UTILISATEURS');
 
   @override
-  Stream<MyUser?> get user {
-    return _supabase.auth.onAuthStateChange.asyncExpand((authState) async* {
-      final session = authState.session;
-      if (session == null) {
-        yield MyUser.empty;
+Stream<MyUser?> get user {
+  return _supabase.auth.onAuthStateChange.asyncExpand((authState) async* {
+    final session = authState.session;
+    if (session == null) {
+      debugPrint('Aucune session active.');
+      yield MyUser.empty;
+    } else {
+      final userId = session.user.id;
+      debugPrint('Session active pour l\'utilisateur : $userId');
+      final response = await userCollection.select().eq('id', userId).single();
+      if (response.isNotEmpty) {
+        yield MyUser.fromEntity(MyUserEntity.fromDocument(response));
       } else {
-        final userId = session.user.id;
-        final response =
-            await userCollection.select().eq('id', userId).single();
-        if (response.isNotEmpty) {
-          yield MyUser.fromEntity(MyUserEntity.fromDocument(response));
-        } else {
-          yield MyUser.empty;
-        }
+        debugPrint('Utilisateur introuvable dans la base de données.');
+        yield MyUser.empty;
       }
-    });
-  }
+    }
+  });
+}
 
   @override
   Future<void> logOut() async {

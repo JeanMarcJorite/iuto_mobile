@@ -28,8 +28,10 @@ import 'package:iuto_mobile/pages/login_page.dart';
 import 'package:iuto_mobile/pages/sign_up_page.dart';
 import 'package:iuto_mobile/services/auth_gates.dart';
 
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
 
   try {
     debugPrint('Initialisation de Supabase...');
